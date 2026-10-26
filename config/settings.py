@@ -5,6 +5,7 @@ Copy `.env.example` to `.env` for local development.
 """
 from pathlib import Path
 import os
+import urllib.parse
 
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
@@ -93,11 +94,36 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 # ---------------------------------------------------------------------------
-# Database — SQLite by default, PostgreSQL through environment variables
+# Database — SQLite by default, PostgreSQL through DATABASE_URL or DB_* values
 # ---------------------------------------------------------------------------
+DATABASE_URL = env("DATABASE_URL")
 DB_ENGINE = env("DB_ENGINE")
 
-if DB_ENGINE:
+if DATABASE_URL:
+    # Single-URL form used by hosting platforms such as Vercel and Neon, e.g.
+    # postgresql://user:pass@host/db?sslmode=require
+    parsed = urllib.parse.urlparse(DATABASE_URL)
+    if parsed.scheme not in {"postgres", "postgresql"}:
+        raise ImproperlyConfigured(
+            "DATABASE_URL must use the postgres:// or postgresql:// scheme."
+        )
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": parsed.path.lstrip("/"),
+            "USER": urllib.parse.unquote(parsed.username or ""),
+            "PASSWORD": urllib.parse.unquote(parsed.password or ""),
+            "HOST": parsed.hostname or "",
+            "PORT": str(parsed.port or ""),
+            "CONN_MAX_AGE": 60,
+            "CONN_HEALTH_CHECKS": True,
+            # Serverless platforms pool connections through PgBouncer, which is
+            # incompatible with server-side cursors in transaction mode.
+            "DISABLE_SERVER_SIDE_CURSORS": True,
+            "OPTIONS": dict(urllib.parse.parse_qsl(parsed.query)),
+        }
+    }
+elif DB_ENGINE:
     if DB_ENGINE not in {
         "django.db.backends.postgresql",
         "django.db.backends.mysql",
@@ -139,7 +165,11 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# Writable location for uploads. Vercel only allows writes under /tmp.
+MEDIA_ROOT = Path(env("DJANGO_MEDIA_ROOT", str(BASE_DIR / "media")))
+# Demo/preview deployments can serve uploads through Django when no object
+# storage is configured. Disable once media is hosted elsewhere.
+SERVE_MEDIA = env_bool("SERVE_MEDIA", DEBUG)
 
 # Dashboard database/dump backups. Kept outside MEDIA_ROOT so archives are never
 # served publicly; downloads are restricted to superusers.

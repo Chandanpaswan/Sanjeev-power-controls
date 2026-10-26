@@ -1,0 +1,24 @@
+# Local development artefacts that must not become public static files.
+.env
+.env.*
+!.env.example
+db.sqlite3
+*.sqlite3
+media/
+backups/
+staticfiles/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+docs/
+
+# Legacy static mock-ups kept in the repository for reference. Serving them
+# from the project root would shadow the Django routes on Vercel. The leading
+# slash anchors each pattern to the project root; without it, the same names
+# would also exclude templates/pages/about.html and contact.html.
+/index.html
+/about.html
+/contact.html
+/manufacturing.html
+/products.html

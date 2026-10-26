@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.static import serve
 
 from core import views
 
@@ -23,3 +24,13 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+elif settings.SERVE_MEDIA:
+    # `static()` is a no-op outside debug mode, so add the media route
+    # explicitly for preview deployments without object storage configured.
+    urlpatterns += [
+        path(
+            f"{settings.MEDIA_URL.lstrip('/')}<path:path>",
+            serve,
+            {"document_root": settings.MEDIA_ROOT},
+        )
+    ]

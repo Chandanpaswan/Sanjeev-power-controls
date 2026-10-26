@@ -231,13 +231,18 @@ Copy `.env.example` to `.env`. Never commit `.env`.
 | `DJANGO_DEBUG` | `True` locally, `False` in production. |
 | `DJANGO_ALLOWED_HOSTS` | Comma-separated host names. |
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | Comma-separated HTTPS origins for form posts. |
+| `DATABASE_URL` | Full PostgreSQL URL, e.g. `postgresql://user:pass@host/db?sslmode=require`. Takes priority over `DB_ENGINE`. |
 | `DB_ENGINE` | Empty for SQLite. Set to `django.db.backends.postgresql` for PostgreSQL. |
-| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Database connection. |
+| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Database connection when `DATABASE_URL` is not used. |
 | `SECURE_SSL_REDIRECT`, `SECURE_HSTS_SECONDS` | Production HTTPS controls. |
 | `USE_X_FORWARDED_PROTO` | `True` behind a TLS-terminating reverse proxy. |
 | `BACKUP_DIR` | Directory for dashboard backups. Defaults to `backups/`. Keep outside the web root. |
 | `LOGIN_MAX_ATTEMPTS`, `LOGIN_LOCKOUT_SECONDS` | Sign-in lockout threshold and duration. |
 | `SESSION_COOKIE_AGE` | Staff session lifetime in seconds. |
+| `DJANGO_MEDIA_ROOT` | Writable upload directory. Defaults to `media/`; use `/tmp/media` on Vercel. |
+| `SERVE_MEDIA` | `True` streams uploads through Django when no object storage is configured. Defaults to `DJANGO_DEBUG`. |
+| `DJANGO_AUTO_SETUP` | `True` migrates and seeds demo data on first boot. Only for ephemeral previews. |
+| `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_PASSWORD`, `DJANGO_SUPERUSER_EMAIL` | Preview account created by `DJANGO_AUTO_SETUP` when it does not exist. |
 | `EMAIL_BACKEND`, `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | Optional future email delivery. No enquiry emails are sent by this build. |
 
 Generate a production secret key:
@@ -321,6 +326,76 @@ python manage.py check --deploy
 python manage.py collectstatic --noinput
 gunicorn config.wsgi:application --bind 0.0.0.0:8000
 ```
+
+---
+
+## Deploying to Vercel
+
+The repository includes `vercel.json`, `.python-version` (3.12) and
+`.vercelignore`, so Vercel's native Django preset detects `manage.py` and loads
+`config.asgi.application`. During each build Vercel installs `requirements.txt`,
+runs `collectstatic` for you and serves `/static/` from its CDN. No serverless
+wrapper or WhiteNoise configuration is required.
+
+Vercel's filesystem is ephemeral, so the local SQLite file cannot be used in
+production. Point the project at a PostgreSQL database (Neon, Supabase, Vercel
+Postgres or any managed Postgres) and set these environment variables in the
+Vercel project:
+
+| Variable | Value |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection URL, e.g. `postgresql://user:pass@host/db?sslmode=require` |
+| `DJANGO_DEBUG` | `False` |
+| `DJANGO_SECRET_KEY` | A fresh random key (see above) |
+| `DJANGO_ALLOWED_HOSTS` | `.vercel.app` plus any custom domain, e.g. `.vercel.app,www.example.in` |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://*.vercel.app,https://www.example.in` |
+| `USE_X_FORWARDED_PROTO` | `True` (Vercel terminates TLS) |
+| `BACKUP_DIR` | Leave unset, or point it at a writable path such as `/tmp/backups` |
+
+Then migrate the database and load the demo content once from your machine:
+
+```bash
+export DATABASE_URL="postgresql://..."   # PowerShell: $env:DATABASE_URL = "..."
+python manage.py migrate
+python manage.py setup_roles
+python manage.py seed_demo
+python manage.py createsuperuser
+```
+
+Deploy with the CLI:
+
+```bash
+vercel link --yes
+vercel --prod
+```
+
+### Temporary preview without Postgres
+
+When no database is available yet, the Vercel project can run on an ephemeral
+SQLite file instead. Set:
+
+| Variable | Value |
+| --- | --- |
+| `DJANGO_AUTO_SETUP` | `True` |
+| `DB_NAME` | `/tmp/spc.sqlite3` |
+| `DJANGO_MEDIA_ROOT` | `/tmp/media` |
+| `SERVE_MEDIA` | `True` |
+| `DJANGO_SUPERUSER_USERNAME` / `DJANGO_SUPERUSER_PASSWORD` | Preview dashboard login |
+
+On the first request of each new function instance the app runs migrations,
+creates roles, seeds the demo catalogue and creates the superuser. Media is
+streamed from `/tmp/media`. Everything written this way disappears when the
+instance is recycled, so attach PostgreSQL before relying on the data.
+
+Caveats on Vercel:
+
+- `/media/` uploads written to the function filesystem are lost between
+  instances. Configure object storage (for example `django-storages` with S3)
+  before staff upload product images in production.
+- The login lockout uses LocMemCache, which is per instance. Use a shared
+  Redis/Memcached cache if the lockout must apply across instances.
+- Set `DJANGO_DEBUG=False` only after `DJANGO_SECRET_KEY` and `DATABASE_URL`
+  are present, because the build imports settings.
 
 ---
 
