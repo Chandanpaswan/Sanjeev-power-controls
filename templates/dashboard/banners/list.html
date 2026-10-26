@@ -1,0 +1,106 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Banners &amp; sliders{% endblock %}
+{% block eyebrow %}Site content{% endblock %}
+{% block page_title %}Banners &amp; sliders{% endblock %}
+
+{% block page_actions %}
+{% if perms.cms.add_banner %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:banner_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  Add banner
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ total_count }} banner{{ total_count|pluralize }} · {{ active_count }} active. The lowest-ordered active banner supplies the public home page hero image and call to action.</p>
+
+<section class="dash-card dash-card--flush">
+  {% if banners %}
+  <div class="table-wrap">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th scope="col">Banner</th>
+          <th scope="col">Call to action</th>
+          <th scope="col">Order</th>
+          <th scope="col">Status</th>
+          <th scope="col">Created</th>
+          <th scope="col" class="ta-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for banner in banners %}
+        <tr>
+          <td>
+            <div class="table-product">
+              <div class="table-product__media table-product__media--wide">
+                {% if banner.desktop_url %}
+                <img src="{{ banner.desktop_url }}" alt="" width="96" height="54" loading="lazy">
+                {% else %}
+                <span class="table-product__blank" aria-hidden="true"><svg class="icon icon--sm"><use href="#icon-image"></use></svg></span>
+                {% endif %}
+              </div>
+              <div class="table-product__body">
+                <a href="{% url 'dashboard:banner_edit' banner.pk %}">{{ banner.title }}</a>
+                <span class="dash-sub">{{ banner.heading|default:banner.description|truncatechars:64 }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            {% if banner.cta_text %}
+            <strong>{{ banner.cta_text }}</strong>
+            <span class="dash-sub mono">{{ banner.cta_url }}</span>
+            {% else %}
+            <span class="dash-sub">None</span>
+            {% endif %}
+          </td>
+          <td>{{ banner.order }}</td>
+          <td>
+            <span class="status-pill status-pill--{% if banner.is_active %}active{% else %}closed{% endif %}">
+              {% if banner.is_active %}Active{% else %}Inactive{% endif %}
+            </span>
+          </td>
+          <td>{{ banner.created_at|date:"j M Y" }}</td>
+          <td>
+            <div class="row-actions">
+              {% if banner.cta_url and banner.is_active %}
+              <a class="icon-btn" href="{{ banner.cta_url }}" target="_blank" rel="noopener" title="Open destination" aria-label="Open destination for {{ banner.title }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-external"></use></svg>
+              </a>
+              {% endif %}
+              {% if perms.cms.change_banner %}
+              <a class="icon-btn" href="{% url 'dashboard:banner_edit' banner.pk %}" title="Edit" aria-label="Edit {{ banner.title }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+              </a>
+              {% endif %}
+              {% if perms.cms.delete_banner %}
+              <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:banner_delete' banner.pk %}" title="Delete" aria-label="Delete {{ banner.title }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-image"></use></svg>
+    <h3>No banners yet</h3>
+    <p>Add a banner to supply a managed hero image and call to action for the public home page.</p>
+    {% if perms.cms.add_banner %}
+    <a class="btn btn--primary btn--sm" href="{% url 'dashboard:banner_create' %}">Add banner</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+
+<div class="notice">
+  <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+  <p><strong>Images and messaging.</strong> Use only images the business owns or is licensed to use. Banner copy should be factual and free of unverified performance claims.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Image Credits — Sanjeev Power Controls{% endblock %}
+{% block description %}Photography credits for the representative industrial images used in this Sanjeev Power Controls demonstration website.{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'core:home' %}">Home</a></li>
+      <li aria-current="page">Image Credits</li>
+    </ol>
+    <p class="eyebrow eyebrow--light">Attribution</p>
+    <h1>Image Credits</h1>
+    <p class="page-hero__lead">The industrial photographs on this demonstration website are representative images from Wikimedia Commons, used under the licences listed below. They are not photographs of Sanjeev Power Controls premises or products.</p>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container">
+    <div class="notice">
+      <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+      <p>Branding, logo artwork and product renders were produced for this project. Photographs below remain the property of their respective authors.</p>
+    </div>
+
+    <div class="credit-list">
+      <article class="credit-row">
+        <h2>Industrial generator set (hero)</h2>
+        <p>Photo: Biswarup Ganguly — CC BY 3.0</p>
+        <a href="https://commons.wikimedia.org/wiki/File:Kirloskar_DG_set.jpg" target="_blank" rel="noopener">Wikimedia Commons source</a>
+      </article>
+      <article class="credit-row">
+        <h2>Diesel generator set (company introduction)</h2>
+        <p>Photo: Gregsedits — CC BY-SA 3.0</p>
+        <a href="https://commons.wikimedia.org/wiki/File:Caterpillar_Olympian_generator.jpg" target="_blank" rel="noopener">Wikimedia Commons source</a>
+      </article>
+      <article class="credit-row">
+        <h2>CNC laser cutting (quality)</h2>
+        <p>Photo: S zillayali — CC BY 3.0</p>
+        <a href="https://commons.wikimedia.org/wiki/File:CNC_Laser.jpg" target="_blank" rel="noopener">Wikimedia Commons source</a>
+      </article>
+      <article class="credit-row">
+        <h2>Engine parts (catalogue context)</h2>
+        <p>Photo: Kapsamoon — CC BY 4.0</p>
+        <a href="https://commons.wikimedia.org/wiki/File:JCB_engine_parts.jpg" target="_blank" rel="noopener">Wikimedia Commons source</a>
+      </article>
+      <article class="credit-row">
+        <h2>Alternator (about page)</h2>
+        <p>Photo: ALASERPOINTER — CC BY-SA 4.0</p>
+        <a href="https://commons.wikimedia.org/wiki/File:Alternator.jpg" target="_blank" rel="noopener">Wikimedia Commons source</a>
+      </article>
+      <article class="credit-row">
+        <h2>Oil filter cutaway</h2>
+        <p>Photo: Harrikkamies — Public domain</p>
+        <a href="https://commons.wikimedia.org/wiki/File:Oil_filter_cutaway.jpg" target="_blank" rel="noopener">Wikimedia Commons source</a>
+      </article>
+      <article class="credit-row">
+        <h2>CNC milling (quality workflow)</h2>
+        <p>Photo: Stilfehler — CC BY-SA 4.0</p>
+        <a href="https://commons.wikimedia.org/wiki/File:CNC_Mill.jpg" target="_blank" rel="noopener">Wikimedia Commons source</a>
+      </article>
+      <article class="credit-row">
+        <h2>Standby generator (applications)</h2>
+        <p>Photo: User:EPO — attribution required</p>
+        <a href="https://commons.wikimedia.org/wiki/File:BRS_generator.jpg" target="_blank" rel="noopener">Wikimedia Commons source</a>
+      </article>
+      <article class="credit-row">
+        <h2>Fuel filter</h2>
+        <p>Photo: User:Phasmatisnox — CC BY 3.0</p>
+        <a href="https://commons.wikimedia.org/wiki/File:Fuel_filter.jpg" target="_blank" rel="noopener">Wikimedia Commons source</a>
+      </article>
+    </div>
+
+    <div class="notice notice--warn">
+      <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+      <p><strong>Before launch:</strong> replace representative photography with verified photographs of the company's own products and facilities, or retain these credits with the licences intact.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

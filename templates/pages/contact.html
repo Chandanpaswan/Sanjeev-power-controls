@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if cms_page.seo_title %}{{ cms_page.seo_title }}{% else %}Contact Us &mdash; {{ site_profile.company_name|default:"Sanjeev Power Controls" }}{% endif %}{% endblock %}
+{% block description %}{{ cms_page.seo_description|default:"Send a DG set parts enquiry to Sanjeev Power Controls. Share your product interest, part number and contact details. Enquiries are stored in the demo dashboard." }}{% endblock %}
+{% block robots %}{% if cms_page.noindex or not site_profile.allow_search_indexing %}noindex,nofollow{% else %}index,follow{% endif %}{% endblock %}
+{% block canonical %}{{ cms_page.canonical_url|default:request.build_absolute_uri }}{% endblock %}
+{% block og_title %}{{ cms_page.seo_title|default:"Contact Us" }}{% endblock %}
+{% block og_description %}{{ cms_page.seo_description|default:cms_page.hero_description|default:"Contact Sanjeev Power Controls" }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'core:home' %}">Home</a></li>
+      <li aria-current="page">Contact Us</li>
+    </ol>
+    <p class="eyebrow eyebrow--light">{{ cms_page.hero_eyebrow|default:"Contact" }}</p>
+    <h1>{{ cms_page.hero_heading|default:"Tell us what the generator needs." }}</h1>
+    <p class="page-hero__lead">{{ cms_page.hero_description|default:"Share the product interest, engine details and quantity. This demo saves the enquiry to a local database and records a reference number for follow-up." }}</p>
+    <div class="page-hero__meta">
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-inbox"></use></svg>Enquiries saved to dashboard</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>No email delivery configured</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>Staff-only access</span>
+    </div>
+  </div>
+</section>
+
+{% include "includes/cms_content.html" %}
+
+<section class="section section--white">
+  <div class="container">
+    <div class="notice notice--warn" data-reveal>
+      <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+      <p><strong>Demo mode:</strong> submitted enquiries are stored in this project’s SQLite database and visible in the admin dashboard. No email or WhatsApp message is sent automatically. Configure email delivery before launch.</p>
+    </div>
+
+    <div class="contact-layout">
+      <div class="form-card" data-reveal>
+        <h2>Send an enquiry</h2>
+        <p>Fields marked <span class="req">*</span> are required. Server-side validation is applied to every submission.</p>
+
+        {% if form_has_errors %}
+        <div class="form-status is-visible" role="alert">
+          Some details need attention. Please check the highlighted fields and try again.
+        </div>
+        {% endif %}
+        {% if form.non_field_errors %}
+        <div class="form-status is-visible" role="alert">
+          {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+        </div>
+        {% endif %}
+
+        <form id="enquiry-form" method="post" action="{% url 'enquiries:create' %}">
+          {% csrf_token %}
+          <div class="visually-hidden" aria-hidden="true">{{ form.website }}</div>
+
+          <div class="form-grid">
+            <div class="field{% if form.name.errors %} has-error{% endif %}">
+              <label for="{{ form.name.id_for_label }}">Full name <span class="req">*</span></label>
+              {{ form.name }}
+              {% for error in form.name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div class="field{% if form.company.errors %} has-error{% endif %}">
+              <label for="{{ form.company.id_for_label }}">Company <span class="muted">(optional)</span></label>
+              {{ form.company }}
+              {% for error in form.company.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div class="field{% if form.phone.errors %} has-error{% endif %}">
+              <label for="{{ form.phone.id_for_label }}">Phone <span class="req">*</span></label>
+              {{ form.phone }}
+              <span class="hint">Include the country code where relevant.</span>
+              {% for error in form.phone.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div class="field{% if form.email.errors %} has-error{% endif %}">
+              <label for="{{ form.email.id_for_label }}">Email <span class="req">*</span></label>
+              {{ form.email }}
+              {% for error in form.email.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div class="field field--full{% if form.product.errors %} has-error{% endif %}">
+              <label for="{{ form.product.id_for_label }}">Product interest <span class="req">*</span></label>
+              {{ form.product }}
+              <span class="hint">Choose a demo listing, or leave it as a general enquiry.</span>
+              {% for error in form.product.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div class="field field--full{% if form.message.errors %} has-error{% endif %}">
+              <label for="{{ form.message.id_for_label }}">Message <span class="req">*</span></label>
+              {{ form.message }}
+              <span class="hint">Include part numbers, engine model, quantity and any fitment notes.</span>
+              {% for error in form.message.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div class="field field--full{% if form.consent.errors %} has-error{% endif %}">
+              <label class="consent" for="{{ form.consent.id_for_label }}">
+                {{ form.consent }}
+                <span>I agree to be contacted about this enquiry and have read the <a href="{% url 'core:privacy' %}">Privacy Notice</a>. <span class="req">*</span></span>
+              </label>
+              {% for error in form.consent.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn--primary btn--block" type="submit">
+              Submit Enquiry
+              <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-send"></use></svg>
+            </button>
+          </div>
+
+          <p class="form-note">
+            <svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
+            <span>Your details are used only to respond to this enquiry. In demo mode they remain in the local project database and are not delivered anywhere.</span>
+          </p>
+        </form>
+      </div>
+
+      <aside class="sidebar-stack" aria-label="Contact details">
+        <div class="info-card" data-reveal data-reveal-delay="1">
+          <h3>Business contact</h3>
+
+          <div class="info-row">
+            <div class="info-row__icon"><svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg></div>
+            <div class="info-row__body">
+              <span class="info-row__label">Phone</span>
+              {% if site_profile.has_phone %}
+              <span class="info-row__value"><a href="{{ site_profile.tel_href }}">{{ site_profile.contact_phone }}</a></span>
+              {% else %}
+              <span class="info-row__value placeholder-value">Add verified business phone</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div class="info-row__icon"><svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg></div>
+            <div class="info-row__body">
+              <span class="info-row__label">Email</span>
+              {% if site_profile.contact_email %}
+              <span class="info-row__value"><a href="mailto:{{ site_profile.contact_email }}">{{ site_profile.contact_email }}</a></span>
+              {% else %}
+              <span class="info-row__value placeholder-value">Add verified business email</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div class="info-row__icon"><svg class="icon" aria-hidden="true"><use href="#icon-map-pin"></use></svg></div>
+            <div class="info-row__body">
+              <span class="info-row__label">Address</span>
+              {% if site_profile.address_lines %}
+              <span class="info-row__value">
+                {% for line in site_profile.address_lines %}{{ line }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+              </span>
+              {% else %}
+              <span class="info-row__value placeholder-value">Add verified factory / office address</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div class="info-row__icon"><svg class="icon" aria-hidden="true"><use href="#icon-clock"></use></svg></div>
+            <div class="info-row__body">
+              <span class="info-row__label">Business hours</span>
+              {% if site_profile.hours %}
+              <span class="info-row__value">{{ site_profile.hours }}</span>
+              {% else %}
+              <span class="info-row__value placeholder-value">Add verified business hours</span>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if site_profile.has_whatsapp %}
+          <a class="btn btn--primary whatsapp-btn is-available" href="{{ site_profile.whatsapp_enquiry_link }}" target="_blank" rel="noopener">
+            <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+            Chat on WhatsApp
+          </a>
+          {% endif %}
+
+          <p class="info-note">Contact details are managed in the admin dashboard and can be updated at any time.</p>
+        </div>
+
+        <div class="info-card info-card--map" data-reveal data-reveal-delay="2">
+          <h3>Location</h3>
+          {% if site_profile.map_embed_url %}
+          <div class="map-frame">
+            <iframe src="{{ site_profile.map_embed_url }}" title="Map showing the verified Sanjeev Power Controls location" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+          {% else %}
+          <div class="map-placeholder">
+            <div>
+              <span class="map-placeholder__pin"><svg class="icon" aria-hidden="true"><use href="#icon-map-pin"></use></svg></span>
+              <strong>Map placeholder</strong>
+              <p>Add the verified business address and a Google Maps embed URL in the dashboard to display the location here.</p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="info-card info-card--quiet">
+          <h3>What happens next</h3>
+          <ol class="mini-steps">
+            <li><span>1</span><p>The enquiry is saved with a unique reference (for example SPC-A1B2C3).</p></li>
+            <li><span>2</span><p>Staff review it in the dashboard and change its status as follow-up progresses.</p></li>
+            <li><span>3</span><p>In production, email delivery and WhatsApp can be configured separately.</p></li>
+          </ol>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

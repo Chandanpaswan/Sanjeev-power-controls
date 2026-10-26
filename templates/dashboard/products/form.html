@@ -1,0 +1,178 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{% if mode == 'create' %}Add product{% else %}Edit product{% endif %}{% endblock %}
+{% block eyebrow %}Catalogue{% endblock %}
+{% block page_title %}{% if mode == 'create' %}Add product{% else %}Edit product{% endif %}{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:product_list' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+  Back to products
+</a>
+{% endblock %}
+
+{% block content %}
+{% if product %}
+<p class="dash-lede">Editing <strong>{{ product.name }}</strong> · <span class="mono">{{ product.sku }}</span> · last updated {{ product.updated_at|date:"j M Y, H:i" }}</p>
+{% else %}
+<p class="dash-lede">Create a catalogue record. Fields are validated on the server; the slug is generated from the name when left blank.</p>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" class="dash-form" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+  <div class="form-status is-visible" role="alert">
+    {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="dash-form__layout">
+    <div class="dash-form__main">
+      <section class="dash-card">
+        <header class="dash-card__head">
+          <div>
+            <h2>Product identity</h2>
+            <p>Name, URL slug and internal reference.</p>
+          </div>
+        </header>
+
+        <div class="field-grid">
+          <div class="field field--full{% if form.name.errors %} has-error{% endif %}">
+            <label for="{{ form.name.id_for_label }}">Product name <span class="req">*</span></label>
+            {{ form.name }}
+            {% for error in form.name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+
+          <div class="field{% if form.sku.errors %} has-error{% endif %}">
+            <label for="{{ form.sku.id_for_label }}">SKU / part reference <span class="req">*</span></label>
+            {{ form.sku }}
+            <span class="hint">Stored in uppercase. Demo values are labelled on the public site.</span>
+            {% for error in form.sku.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+
+          <div class="field{% if form.category.errors %} has-error{% endif %}">
+            <label for="{{ form.category.id_for_label }}">Category <span class="req">*</span></label>
+            {{ form.category }}
+            {% for error in form.category.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+
+          <div class="field field--full{% if form.slug.errors %} has-error{% endif %}">
+            <label for="{{ form.slug.id_for_label }}">URL slug</label>
+            {{ form.slug }}
+            <span class="hint">{{ form.slug.help_text }} Public URL: <code>/products/&lt;slug&gt;/</code></span>
+            {% for error in form.slug.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section class="dash-card">
+        <header class="dash-card__head">
+          <div>
+            <h2>Public content</h2>
+            <p>Shown on catalogue cards and the product page.</p>
+          </div>
+        </header>
+
+        <div class="field-grid">
+          <div class="field field--full{% if form.short_description.errors %} has-error{% endif %}">
+            <label for="{{ form.short_description.id_for_label }}">Short description <span class="req">*</span></label>
+            {{ form.short_description }}
+            <span class="hint">One or two lines. Used on cards and in the page meta description.</span>
+            {% for error in form.short_description.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+
+          <div class="field field--full{% if form.description.errors %} has-error{% endif %}">
+            <label for="{{ form.description.id_for_label }}">Full description <span class="req">*</span></label>
+            {{ form.description }}
+            {% for error in form.description.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+
+          <div class="field field--full{% if form.specifications.errors %} has-error{% endif %}">
+            <label for="{{ form.specifications.id_for_label }}">Specifications</label>
+            {{ form.specifications }}
+            <span class="hint">One per line as <code>Label: Value</code>. These are displayed in a table and clearly marked as unverified demo data.</span>
+            {% for error in form.specifications.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="dash-form__side">
+      <section class="dash-card">
+        <header class="dash-card__head">
+          <div>
+            <h2>Image</h2>
+            <p>JPG, PNG or WebP up to 3 MB.</p>
+          </div>
+        </header>
+
+        <div class="image-upload{% if form.image.errors %} has-error{% endif %}">
+          <div class="image-upload__preview" data-image-preview>
+            {% if product and product.image %}
+            <img src="{{ product.image.url }}" alt="Current image for {{ product.name }}" data-image-target>
+            {% else %}
+            <span class="image-upload__empty" data-image-empty>
+              <svg class="icon" aria-hidden="true"><use href="#icon-image"></use></svg>
+              <span>No image selected</span>
+            </span>
+            <img src="" alt="" data-image-target hidden>
+            {% endif %}
+          </div>
+          <label class="visually-hidden" for="{{ form.image.id_for_label }}">Product image</label>
+          {{ form.image }}
+          <span class="hint">{{ form.image.help_text }}</span>
+          {% for error in form.image.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          {% if product and product.image %}
+          <p class="image-upload__current">Current file: <span class="mono">{{ product.image.name }}</span></p>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="dash-card">
+        <header class="dash-card__head">
+          <div>
+            <h2>Visibility</h2>
+            <p>Control the public catalogue.</p>
+          </div>
+        </header>
+
+        <div class="check-field">
+          <label class="form-check">
+            {{ form.active }}
+            <span class="form-check-label">
+              <strong>Active</strong>
+              <span>{{ form.active.help_text }}</span>
+            </span>
+          </label>
+          {% for error in form.active.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="check-field">
+          <label class="form-check">
+            {{ form.featured }}
+            <span class="form-check-label">
+              <strong>Featured</strong>
+              <span>Featured products can appear on the home page and sort first in the catalogue.</span>
+            </span>
+          </label>
+          {% for error in form.featured.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+      </section>
+
+      <div class="dash-form__submit">
+        <button class="btn btn--primary btn--block" type="submit">
+          {% if mode == 'create' %}Create product{% else %}Save changes{% endif %}
+        </button>
+        <a class="btn btn--ghost btn--block" href="{% url 'dashboard:product_list' %}">Cancel</a>
+        {% if product %}
+        <a class="dash-danger-link" href="{% url 'dashboard:product_delete' product.pk %}">
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+          Delete this product
+        </a>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+</form>
+{% endblock %}

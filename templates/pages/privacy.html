@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}{% if cms_page.seo_title %}{{ cms_page.seo_title }}{% else %}Privacy Notice &mdash; {{ site_profile.company_name|default:"Sanjeev Power Controls" }}{% endif %}{% endblock %}
+{% block description %}{{ cms_page.seo_description|default:"How the Sanjeev Power Controls demonstration website handles enquiry information stored in the local database." }}{% endblock %}
+{% block robots %}{% if cms_page.noindex or not site_profile.allow_search_indexing %}noindex,nofollow{% else %}index,follow{% endif %}{% endblock %}
+{% block canonical %}{{ cms_page.canonical_url|default:request.build_absolute_uri }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'core:home' %}">Home</a></li>
+      <li aria-current="page">Privacy Notice</li>
+    </ol>
+    <p class="eyebrow eyebrow--light">{{ cms_page.hero_eyebrow|default:"Legal" }}</p>
+    <h1>{{ cms_page.hero_heading|default:"Privacy Notice" }}</h1>
+    <p class="page-hero__lead">{{ cms_page.hero_description|default:"How enquiry information is handled in this demonstration build. This notice is sample copy and must be reviewed by the business before launch." }}</p>
+  </div>
+</section>
+
+{% if cms_page.body or cms_page.public_sections %}
+{% include "includes/cms_content.html" %}
+{% else %}
+<section class="section section--white">
+  <div class="container narrow prose">
+    <div class="notice notice--warn">
+      <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+      <p><strong>Demo notice:</strong> this page is a placeholder. It is not legal advice and has not been reviewed for compliance with the DPDP Act, GDPR or any other regime.</p>
+    </div>
+
+    <h2>Information collected</h2>
+    <p>The enquiry form collects your name, company (optional), email address, phone number, product interest and message. A consent checkbox must be ticked before the form can be submitted.</p>
+
+    <h2>Why it is collected</h2>
+    <p>The information is used only to understand and respond to the parts enquiry. In this demonstration build, submissions are stored in a local SQLite database used for the client demo.</p>
+
+    <h2>Who can see it</h2>
+    <p>Enquiries are private. They are visible only to authenticated staff accounts through the admin panel at <code>/admin-panel/</code>. They are not published on the public website and are excluded from search engine indexing.</p>
+
+    <h2>How long it is kept</h2>
+    <p>No retention schedule has been configured. Before launch, the business should define a retention period and remove enquiries that are no longer needed.</p>
+
+    <h2>Your choices</h2>
+    <p>Contact the business using the phone number or email address published on the <a href="{% url 'core:contact' %}">contact page</a> to request access to or deletion of an enquiry.</p>
+
+    <h2>Cookies and tracking</h2>
+    <p>This build sets a session cookie for staff login and a CSRF cookie for form protection. It does not include advertising trackers or third-party analytics. The demonstration banner stores a dismissal preference in your browser's local storage.</p>
+
+    <h2>Changes</h2>
+    <p>This notice will be replaced with a reviewed version before the website is made public.</p>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

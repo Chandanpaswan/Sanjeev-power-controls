@@ -1,0 +1,182 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}SEO management{% endblock %}
+{% block eyebrow %}Configuration{% endblock %}
+{% block page_title %}SEO management{% endblock %}
+
+{% block page_actions %}
+{% if perms.core.change_sitesettings %}
+<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:seo_settings' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-sliders"></use></svg>
+  Site defaults
+</a>
+{% endif %}
+{% if perms.cms.add_redirectrule %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:redirect_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  Add redirect
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">Search appearance for managed pages and articles, plus redirects for retired URLs. Every field is optional; defaults fall back to the page title and excerpt.</p>
+
+<div class="stat-grid">
+  <article class="stat-card">
+    <span class="stat-card__icon stat-card__icon--blue"><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg></span>
+    <span class="stat-card__value">{{ pages_missing_title }}</span>
+    <span class="stat-card__label">Pages missing SEO title</span>
+    <span class="stat-card__meta">of {{ pages|length }} page{{ pages|length|pluralize }}</span>
+  </article>
+  <article class="stat-card">
+    <span class="stat-card__icon stat-card__icon--blue"><svg class="icon" aria-hidden="true"><use href="#icon-pencil"></use></svg></span>
+    <span class="stat-card__value">{{ posts_missing_description }}</span>
+    <span class="stat-card__label">Posts missing description</span>
+    <span class="stat-card__meta">of {{ posts|length }} post{{ posts|length|pluralize }}</span>
+  </article>
+  <article class="stat-card">
+    <span class="stat-card__icon stat-card__icon--red"><svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg></span>
+    <span class="stat-card__value">{{ noindex_pages|add:noindex_posts }}</span>
+    <span class="stat-card__label">Noindex records</span>
+    <span class="stat-card__meta">{{ noindex_pages }} page{{ noindex_pages|pluralize }} · {{ noindex_posts }} post{{ noindex_posts|pluralize }}</span>
+  </article>
+  <article class="stat-card">
+    <span class="stat-card__icon stat-card__icon--green"><svg class="icon" aria-hidden="true"><use href="#icon-refresh"></use></svg></span>
+    <span class="stat-card__value">{{ redirects|length }}</span>
+    <span class="stat-card__label">Redirect rules</span>
+    <span class="stat-card__meta">Applied by the public redirect middleware</span>
+  </article>
+</div>
+
+<div class="dash-columns">
+  <section class="dash-card dash-card--flush">
+    <header class="dash-card__head">
+      <div>
+        <h2>Page search appearance</h2>
+        <p>Edit a page to change its title, description or index setting.</p>
+      </div>
+    </header>
+    {% if pages %}
+    <div class="table-wrap">
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th scope="col">Page</th>
+            <th scope="col">SEO title</th>
+            <th scope="col">Description</th>
+            <th scope="col">Indexing</th>
+            <th scope="col" class="ta-right">Edit</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for page in pages %}
+          <tr>
+            <td>
+              <strong>{{ page.title }}</strong>
+              <span class="dash-sub mono">/{{ page.slug }}/ · {{ page.get_status_display }}</span>
+            </td>
+            <td>{% if page.seo_title %}{{ page.seo_title|truncatechars:48 }}{% else %}<span class="status-pill status-pill--progress">Missing</span>{% endif %}</td>
+            <td>{% if page.seo_description %}Yes{% else %}<span class="status-pill status-pill--progress">Missing</span>{% endif %}</td>
+            <td>{% if page.noindex %}<span class="status-pill status-pill--closed">Noindex</span>{% else %}<span class="status-pill status-pill--active">Indexable</span>{% endif %}</td>
+            <td>
+              <div class="row-actions">
+                {% if perms.cms.change_page %}
+                <a class="icon-btn" href="{% url 'dashboard:page_edit' page.pk %}" title="Edit SEO" aria-label="Edit SEO for {{ page.title }}">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+                </a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="dash-empty dash-empty--sm">
+      <h3>No managed pages</h3>
+      <p>Create a page to control its search appearance.</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <aside class="dash-columns__side">
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Site defaults</h2>
+          <p>Applied site-wide.</p>
+        </div>
+      </header>
+      <ul class="detail-list detail-list--compact">
+        <li class="detail-row"><dt>Title pattern</dt><dd>{{ site.default_seo_title|default:"Company name and tagline" }}</dd></li>
+        <li class="detail-row"><dt>Default description</dt><dd>{{ site.default_seo_description|default:"Not configured"|truncatechars:100 }}</dd></li>
+        <li class="detail-row"><dt>Search indexing</dt><dd>{% if site.allow_search_indexing %}<span class="status-pill status-pill--active">Allowed</span>{% else %}<span class="status-pill status-pill--closed">Blocked</span>{% endif %}</dd></li>
+        <li class="detail-row"><dt>Analytics ID</dt><dd>{{ site.google_analytics_id|default:"Not configured" }}</dd></li>
+      </ul>
+      {% if perms.core.change_sitesettings %}
+      <div class="dash-form__submit">
+        <a class="btn btn--outline btn--sm" href="{% url 'dashboard:seo_settings' %}">Edit site defaults</a>
+      </div>
+      {% endif %}
+    </section>
+  </aside>
+</div>
+
+<section class="dash-card dash-card--flush">
+  <header class="dash-card__head">
+    <div>
+      <h2>Redirect rules</h2>
+      <p>Old public paths are redirected before the request reaches a view.</p>
+    </div>
+  </header>
+  {% if redirects %}
+  <div class="table-wrap">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th scope="col">From</th>
+          <th scope="col">To</th>
+          <th scope="col">Code</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="ta-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for redirect in redirects %}
+        <tr>
+          <td><span class="mono">{{ redirect.old_path }}</span></td>
+          <td><span class="mono">{{ redirect.new_path }}</span></td>
+          <td>{{ redirect.status_code }}</td>
+          <td>{% if redirect.is_active %}<span class="status-pill status-pill--active">Active</span>{% else %}<span class="status-pill status-pill--closed">Inactive</span>{% endif %}</td>
+          <td>
+            <div class="row-actions">
+              {% if perms.cms.change_redirectrule %}
+              <a class="icon-btn" href="{% url 'dashboard:redirect_edit' redirect.pk %}" title="Edit" aria-label="Edit redirect {{ redirect.old_path }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+              </a>
+              {% endif %}
+              {% if perms.cms.delete_redirectrule %}
+              <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:redirect_delete' redirect.pk %}" title="Delete" aria-label="Delete redirect {{ redirect.old_path }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="dash-empty dash-empty--sm">
+    <h3>No redirect rules</h3>
+    <p>Add a redirect when a public URL changes so existing links keep working.</p>
+    {% if perms.cms.add_redirectrule %}
+    <a class="btn btn--primary btn--sm" href="{% url 'dashboard:redirect_create' %}">Add redirect</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

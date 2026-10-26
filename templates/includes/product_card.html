@@ -1,0 +1,27 @@
+{% load static %}
+<article class="product-card" data-reveal>
+  <div class="product-media">
+    <span class="demo-tag">Demo product</span>
+    {% if product.display_image_url %}
+    <img src="{{ product.display_image_url }}" alt="{{ product.display_alt }}" width="1000" height="750" loading="lazy" decoding="async">
+    {% else %}
+    <img src="{% static 'images/products/placeholder.svg' %}" alt="Product image placeholder for {{ product.name }}" width="800" height="600" loading="lazy" decoding="async">
+    {% endif %}
+  </div>
+  <div class="product-body">
+    <p class="product-cat">{{ product.category.name }}</p>
+    <h2><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h2>
+    <p class="product-desc">{{ product.short_description }}</p>
+    <ul class="product-spec">
+      <li>SKU: {{ product.sku }}</li>
+      <li>Demo listing</li>
+    </ul>
+    <div class="product-actions">
+      <a class="link-arrow" href="{{ product.get_absolute_url }}">
+        View details
+        <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+      </a>
+      <a class="btn btn--primary btn--sm" href="{{ product.enquiry_url }}">Request Enquiry</a>
+    </div>
+  </div>
+</article>

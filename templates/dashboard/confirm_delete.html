@@ -1,0 +1,48 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block eyebrow %}Confirmation required{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{{ cancel_url }}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+  Cancel
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="confirm-wrap">
+  <section class="dash-card confirm-card">
+    <span class="confirm-card__icon{% if blocked %} confirm-card__icon--blocked{% endif %}">
+      <svg class="icon" aria-hidden="true"><use href="#icon-{% if blocked %}lock{% else %}trash{% endif %}"></use></svg>
+    </span>
+
+    {% if blocked %}
+    <h2>Deletion blocked</h2>
+    <p>The {{ object_type }} <strong>{{ object_label }}</strong> cannot be deleted yet.</p>
+    {% else %}
+    <h2>Delete this {{ object_type }}?</h2>
+    <p>You are about to permanently delete the {{ object_type }} <strong>{{ object_label }}</strong>. This action cannot be undone.</p>
+    {% endif %}
+
+    <div class="notice notice--warn">
+      <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+      <p>{{ warning }}</p>
+    </div>
+
+    <form method="post" action="" class="confirm-form">
+      {% csrf_token %}
+      {% if blocked %}
+      <a class="btn btn--navy" href="{{ cancel_url }}">Go back</a>
+      {% else %}
+      <button class="btn btn--danger" type="submit">
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+        Yes, delete permanently
+      </button>
+      <a class="btn btn--ghost" href="{{ cancel_url }}">Cancel</a>
+      {% endif %}
+    </form>
+  </section>
+</div>
+{% endblock %}

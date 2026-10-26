@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if cms_page.seo_title %}{{ cms_page.seo_title }}{% else %}{{ cms_page.title }} — {{ site_profile.company_name|default:"Sanjeev Power Controls" }}{% endif %}{% endblock %}
+{% block description %}{{ cms_page.seo_description|default:cms_page.hero_description|default:cms_page.title }}{% endblock %}
+{% block robots %}{% if cms_page.noindex or not site_profile.allow_search_indexing %}noindex,nofollow{% else %}index,follow{% endif %}{% endblock %}
+{% block canonical %}{{ cms_page.canonical_url|default:request.build_absolute_uri }}{% endblock %}
+{% block og_title %}{{ cms_page.seo_title|default:cms_page.title }}{% endblock %}
+{% block og_description %}{{ cms_page.seo_description|default:cms_page.hero_description|default:cms_page.title }}{% endblock %}
+{% block og_image %}{% if cms_page.og_image %}{{ request.scheme }}://{{ request.get_host }}{{ cms_page.og_image.url }}{% elif cms_page.display_image_url %}{{ request.scheme }}://{{ request.get_host }}{{ cms_page.display_image_url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'core:home' %}">Home</a></li>
+      <li aria-current="page">{{ cms_page.title }}</li>
+    </ol>
+    {% if cms_page.hero_eyebrow %}<p class="eyebrow eyebrow--light">{{ cms_page.hero_eyebrow }}</p>{% endif %}
+    <h1>{{ cms_page.hero_heading|default:cms_page.title }}</h1>
+    {% if cms_page.hero_description %}<p class="page-hero__lead">{{ cms_page.hero_description }}</p>{% endif %}
+    {% if cms_page.cta_label and cms_page.cta_url %}
+    <div class="page-hero__meta">
+      <a class="btn btn--light" href="{{ cms_page.cta_url }}"{% if cms_page.cta_url|slice:":4" == "http" %} target="_blank" rel="noopener"{% endif %}>
+        {{ cms_page.cta_label }}
+        <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if cms_page.display_image_url %}
+<section class="section section--white">
+  <div class="container">
+    <figure class="cms-page-figure" data-reveal>
+      <img src="{{ cms_page.display_image_url }}" alt="{{ cms_page.display_alt }}" width="1400" height="700" decoding="async">
+    </figure>
+  </div>
+</section>
+{% endif %}
+
+{% include "includes/cms_content.html" %}
+
+{% if not cms_page.body and not cms_page.public_sections %}
+<section class="section section--white">
+  <div class="container">
+    <div class="empty-state is-visible">
+      <svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>
+      <h3>Content coming soon</h3>
+      <p>This page has been published, but its body content has not been added yet.</p>
+      <a class="btn btn--navy btn--sm" href="{% url 'core:contact' %}">Contact the team</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section cta-section">
+  <div class="container">
+    <div class="cta-banner" data-reveal>
+      <div>
+        <p class="eyebrow eyebrow--light">Start with the requirement</p>
+        <h2>Need a part number confirmed?</h2>
+        <p>Send the product, engine model and quantity so the requirement can be checked before quoting.</p>
+      </div>
+      <div class="cta-banner__actions">
+        <a class="btn btn--light" href="{% url 'core:contact' %}">
+          Request Enquiry
+          <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+        </a>
+        <a class="btn btn--ghost-light" href="{% url 'products:list' %}">Browse Products</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

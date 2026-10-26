@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+  <title id="title">Illustrative render of a generator alternator component</title>
+  <desc id="desc">Studio-style illustration of an industrial alternator with cooling fins, a pulley, terminal box and mounting feet. Illustrative product visual, not a photograph.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F8FAFC"/>
+      <stop offset="0.55" stop-color="#EEF3F8"/>
+      <stop offset="1" stop-color="#E3EAF2"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#0B1F3A" stroke-opacity="0.045" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#092642"/>
+      <stop offset="0.14" stop-color="#164E8A"/>
+      <stop offset="0.38" stop-color="#2C6BA4"/>
+      <stop offset="0.62" stop-color="#1A548F"/>
+      <stop offset="0.88" stop-color="#0F3E6E"/>
+      <stop offset="1" stop-color="#082340"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F5F8FB"/>
+      <stop offset="0.35" stop-color="#C3CEDB"/>
+      <stop offset="0.55" stop-color="#EDF1F6"/>
+      <stop offset="0.75" stop-color="#A9B7C6"/>
+      <stop offset="1" stop-color="#7F8FA1"/>
+    </linearGradient>
+    <linearGradient id="metalH" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7F8FA1"/>
+      <stop offset="0.22" stop-color="#EDF1F6"/>
+      <stop offset="0.5" stop-color="#B9C5D2"/>
+      <stop offset="0.78" stop-color="#F5F8FB"/>
+      <stop offset="1" stop-color="#8E9DAD"/>
+    </linearGradient>
+    <linearGradient id="foot" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8FA0B2"/>
+      <stop offset="1" stop-color="#4B5D70"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-40%" width="170%" height="220%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#0B1F3A" flood-opacity="0.24"/>
+    </filter>
+    <clipPath id="bodyClip"><rect x="238" y="248" width="330" height="134" rx="26"/></clipPath>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#grid)"/>
+  <ellipse cx="410" cy="494" rx="290" ry="40" fill="#0B1F3A" opacity="0.09"/>
+
+  <g filter="url(#shadow)">
+    <!-- mounting rails -->
+    <rect x="286" y="436" width="270" height="26" rx="8" fill="url(#foot)"/>
+    <path d="M312 412h44l12 28h-62Z" fill="url(#metal)"/>
+    <path d="M474 412h44l6 28h-62Z" fill="url(#metal)"/>
+    <rect x="298" y="460" width="246" height="10" rx="5" fill="#334155"/>
+    <circle cx="322" cy="453" r="4.5" fill="#1E293B"/>
+    <circle cx="518" cy="453" r="4.5" fill="#1E293B"/>
+
+    <!-- main body -->
+    <rect x="238" y="248" width="330" height="134" rx="26" fill="url(#body)"/>
+    <g clip-path="url(#bodyClip)" stroke="#082340" stroke-opacity="0.45" stroke-width="2">
+      <path d="M268 252v126M286 252v126M304 252v126M322 252v126M340 252v126M358 252v126M376 252v126M394 252v126M412 252v126M430 252v126M448 252v126M466 252v126M484 252v126M502 252v126M520 252v126M538 252v126"/>
+    </g>
+    <rect x="238" y="248" width="330" height="14" rx="7" fill="#FFFFFF" opacity="0.09"/>
+    <rect x="238" y="368" width="330" height="14" rx="7" fill="#07182D" opacity="0.28"/>
+
+    <!-- terminal box -->
+    <rect x="344" y="198" width="124" height="58" rx="8" fill="#0B1F3A"/>
+    <rect x="354" y="208" width="104" height="10" rx="5" fill="#FFFFFF" opacity="0.08"/>
+    <rect x="352" y="240" width="42" height="10" rx="4" fill="url(#metal)"/>
+    <rect x="414" y="240" width="42" height="10" rx="4" fill="url(#metal)"/>
+    <circle cx="370" cy="222" r="5" fill="#D92332"/>
+    <circle cx="392" cy="222" r="5" fill="#D92332"/>
+    <rect x="430" y="214" width="16" height="26" rx="4" fill="#164E8A" stroke="#2E5A8A" stroke-width="1.5"/>
+
+    <!-- left fan cover -->
+    <rect x="160" y="240" width="92" height="150" rx="20" fill="url(#metalH)"/>
+    <ellipse cx="206" cy="315" rx="32" ry="56" fill="#0B1F3A" opacity="0.18"/>
+    <ellipse cx="206" cy="315" rx="24" ry="46" fill="#233B57"/>
+    <g stroke="#94A3B8" stroke-width="4" stroke-linecap="round">
+      <path d="M206 272v86M184 286l44 58M228 286l-44 58"/>
+    </g>
+    <circle cx="206" cy="315" r="9" fill="url(#metal)"/>
+
+    <!-- right end bracket -->
+    <rect x="556" y="252" width="42" height="126" rx="10" fill="url(#metalH)"/>
+    <rect x="556" y="252" width="10" height="126" fill="#FFFFFF" opacity="0.4"/>
+
+    <!-- pulley -->
+    <ellipse cx="632" cy="315" rx="22" ry="62" fill="#0B1F3A" opacity="0.18"/>
+    <rect x="596" y="252" width="34" height="126" rx="14" fill="url(#metal)"/>
+    <g stroke="#6B7C8F" stroke-width="2.5">
+      <path d="M599 270h28M599 286h28M599 302h28M599 318h28M599 334h28M599 350h28"/>
+    </g>
+    <circle cx="613" cy="315" r="26" fill="url(#metalH)" stroke="#64748B" stroke-width="1.5"/>
+    <circle cx="613" cy="315" r="8" fill="#334155"/>
+
+    <!-- nameplate -->
+    <rect x="300" y="318" width="86" height="26" rx="3" fill="#DDE5EE"/>
+    <rect x="306" y="324" width="52" height="3" rx="1.5" fill="#64748B"/>
+    <rect x="306" y="331" width="68" height="2" rx="1" fill="#94A3B8"/>
+    <rect x="306" y="336" width="40" height="2" rx="1" fill="#94A3B8"/>
+  </g>
+
+  <rect x="248" y="264" width="9" height="96" rx="4.5" fill="#FFFFFF" opacity="0.14"/>
+</svg>

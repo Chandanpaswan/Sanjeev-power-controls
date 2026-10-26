@@ -1,0 +1,41 @@
+{% if testimonials %}
+<section class="section section--light">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">Customer feedback</p>
+        <h2>What customers say.</h2>
+        <p class="lead">Published testimonials are shown only after the team has approved them.</p>
+      </div>
+    </div>
+    <div class="testimonial-grid">
+      {% for testimonial in testimonials %}
+      <figure class="testimonial-card" data-reveal>
+        <blockquote>
+          <p>{{ testimonial.quote }}</p>
+        </blockquote>
+        <figcaption class="testimonial-card__person">
+          {% if testimonial.photo_url %}
+          <img src="{{ testimonial.photo_url }}" alt="{{ testimonial.customer_name }}" width="52" height="52" loading="lazy" decoding="async">
+          {% else %}
+          <span class="testimonial-card__avatar" aria-hidden="true">{{ testimonial.customer_name|slice:":1" }}</span>
+          {% endif %}
+          <span>
+            <strong>{{ testimonial.customer_name }}</strong>
+            {% if testimonial.designation or testimonial.company %}
+            <span>{% if testimonial.designation %}{{ testimonial.designation }}{% endif %}{% if testimonial.designation and testimonial.company %} · {% endif %}{% if testimonial.company %}{{ testimonial.company }}{% endif %}</span>
+            {% endif %}
+          </span>
+        </figcaption>
+        {% if testimonial.rating %}
+        <p class="testimonial-card__rating" aria-label="Rated {{ testimonial.rating }} out of 5">
+          {% for star in "12345"|make_list %}<span aria-hidden="true">{% if forloop.counter <= testimonial.rating %}★{% else %}☆{% endif %}</span>{% endfor %}
+          <span class="visually-hidden">{{ testimonial.rating }} out of 5</span>
+        </p>
+        {% endif %}
+      </figure>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}

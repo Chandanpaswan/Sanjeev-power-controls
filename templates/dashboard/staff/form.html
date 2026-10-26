@@ -1,0 +1,141 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{% if mode == 'create' %}Add staff account{% else %}Edit staff account{% endif %}{% endblock %}
+{% block eyebrow %}Access control{% endblock %}
+{% block page_title %}{% if mode == 'create' %}Add staff account{% else %}Edit staff account{% endif %}{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:staff_list' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+  Back to staff
+</a>
+{% endblock %}
+
+{% block content %}
+{% if staff_user %}
+<p class="dash-lede">Editing <strong>{{ staff_user.username }}</strong>{% if staff_user.is_superuser %} · superuser account{% endif %}.</p>
+{% else %}
+<p class="dash-lede">Create a staff account with access to the dashboard. Choose groups to limit which sections the account can manage.</p>
+{% endif %}
+
+<form method="post" class="dash-form dash-form--narrow" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+  <div class="form-status is-visible" role="alert">
+    {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+  </div>
+  {% endif %}
+
+  <section class="dash-card">
+    <header class="dash-card__head">
+      <div>
+        <h2>Account details</h2>
+        <p>Identity and contact information.</p>
+      </div>
+    </header>
+
+    <div class="field-grid">
+      <div class="field{% if form.username.errors %} has-error{% endif %}">
+        <label for="{{ form.username.id_for_label }}">Username <span class="req">*</span></label>
+        {{ form.username }}
+        {% for error in form.username.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="field{% if form.email.errors %} has-error{% endif %}">
+        <label for="{{ form.email.id_for_label }}">Email <span class="req">*</span></label>
+        {{ form.email }}
+        {% for error in form.email.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="field{% if form.first_name.errors %} has-error{% endif %}">
+        <label for="{{ form.first_name.id_for_label }}">First name</label>
+        {{ form.first_name }}
+        {% for error in form.first_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="field{% if form.last_name.errors %} has-error{% endif %}">
+        <label for="{{ form.last_name.id_for_label }}">Last name</label>
+        {{ form.last_name }}
+        {% for error in form.last_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <section class="dash-card">
+    <header class="dash-card__head">
+      <div>
+        <h2>{% if mode == 'create' %}Password{% else %}Reset password{% endif %}</h2>
+        <p>{% if mode == 'create' %}Set an initial password for the account.{% else %}Leave both fields blank to keep the current password.{% endif %}</p>
+      </div>
+    </header>
+
+    <div class="field-grid">
+      {% if mode == 'create' %}
+      <div class="field{% if form.password1.errors %} has-error{% endif %}">
+        <label for="{{ form.password1.id_for_label }}">Password <span class="req">*</span></label>
+        {{ form.password1 }}
+        {% for error in form.password1.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="field{% if form.password2.errors %} has-error{% endif %}">
+        <label for="{{ form.password2.id_for_label }}">Confirm password <span class="req">*</span></label>
+        {{ form.password2 }}
+        {% for error in form.password2.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      {% else %}
+      <div class="field{% if form.new_password1.errors %} has-error{% endif %}">
+        <label for="{{ form.new_password1.id_for_label }}">New password</label>
+        {{ form.new_password1 }}
+        <span class="hint">{{ form.new_password1.help_text }}</span>
+        {% for error in form.new_password1.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="field{% if form.new_password2.errors %} has-error{% endif %}">
+        <label for="{{ form.new_password2.id_for_label }}">Confirm new password</label>
+        {{ form.new_password2 }}
+        {% for error in form.new_password2.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="dash-card">
+    <header class="dash-card__head">
+      <div>
+        <h2>Permissions</h2>
+        <p>Groups and account status.</p>
+      </div>
+    </header>
+
+    <div class="field{% if form.groups.errors %} has-error{% endif %}">
+      <label>{{ form.groups.label }}</label>
+      <div class="group-checks-wrap">
+        {{ form.groups }}
+      </div>
+      <span class="hint">{{ form.groups.help_text }}</span>
+      {% for error in form.groups.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+
+    <div class="check-field">
+      <label class="form-check">
+        {{ form.is_active }}
+        <span class="form-check-label">
+          <strong>Account active</strong>
+          <span>Inactive accounts cannot sign in to the dashboard.</span>
+        </span>
+      </label>
+      {% for error in form.is_active.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+
+    {% if staff_user and staff_user.is_superuser %}
+    <div class="notice notice--warn notice--compact">
+      <svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
+      <p>This is a superuser account. It retains full access regardless of group membership.</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <div class="dash-form__actions">
+    <button class="btn btn--primary" type="submit">
+      {% if mode == 'create' %}Create account{% else %}Save changes{% endif %}
+    </button>
+    <a class="btn btn--ghost" href="{% url 'dashboard:staff_list' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

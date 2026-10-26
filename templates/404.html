@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Page not found — Sanjeev Power Controls{% endblock %}
+{% block description %}The page you requested could not be found.{% endblock %}
+{% block robots %}noindex,nofollow{% endblock %}
+
+{% block content %}
+<section class="section section--light error-page">
+  <div class="container">
+    <div class="error-card" data-reveal>
+      <p class="error-code">404</p>
+      <h1>That page isn’t here.</h1>
+      <p>The address may be mistyped, or the page may have moved. The catalogue and contact page are the best places to continue.</p>
+      <div class="error-card__actions">
+        <a class="btn btn--primary" href="{% url 'core:home' %}">
+          Back to home
+          <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+        </a>
+        <a class="btn btn--outline" href="{% url 'products:list' %}">Browse products</a>
+        <a class="btn btn--outline" href="{% url 'core:contact' %}">Contact us</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Notifications{% endblock %}
+{% block eyebrow %}Inbox{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+
+{% block page_actions %}
+{% if can_create %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:notification_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  New notification
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ total_count }} notification{{ total_count|pluralize }} in your inbox · {{ unread_count }} unread. Notifications sent to all staff appear for every active account.</p>
+
+<form class="dash-filter dash-filter--wrap" method="get" action="{% url 'dashboard:notification_list' %}">
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="notification-status">Status</label>
+    <select id="notification-status" name="status">
+      <option value="">All notifications</option>
+      <option value="unread" {% if status == 'unread' %}selected{% endif %}>Unread only</option>
+      <option value="read" {% if status == 'read' %}selected{% endif %}>Read only</option>
+    </select>
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="notification-level">Priority</label>
+    <select id="notification-level" name="level">
+      <option value="">Any priority</option>
+      {% for value, label in level_choices %}
+      <option value="{{ value }}" {% if level == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn btn--navy btn--sm" type="submit">Filter</button>
+  {% if status or level %}
+  <a class="btn btn--ghost btn--sm" href="{% url 'dashboard:notification_list' %}">Reset</a>
+  {% endif %}
+</form>
+
+{% if unread_count %}
+<form class="notification-toolbar" method="post" action="{% url 'dashboard:notification_mark_all_read' %}">
+  {% csrf_token %}
+  <span class="dash-sub">{{ unread_count }} unread notification{{ unread_count|pluralize }} in your inbox.</span>
+  <button class="btn btn--outline btn--sm" type="submit">Mark all read</button>
+</form>
+{% endif %}
+
+{% if notifications %}
+<div class="notification-list">
+  {% for notification in notifications %}
+  <article class="notification-card notification-card--{{ notification.level }}{% if not notification.is_read %} is-unread{% endif %}">
+    <span class="notification-card__icon">
+      <svg class="icon" aria-hidden="true"><use href="#icon-{% if notification.level == 'danger' %}alert{% elif notification.level == 'success' %}check{% elif notification.level == 'warning' %}info{% else %}inbox{% endif %}"></use></svg>
+    </span>
+    <div class="notification-card__body">
+      <div class="notification-card__head">
+        <h2>{{ notification.title }}</h2>
+        {% if not notification.is_read %}<span class="status-pill status-pill--new">Unread</span>{% endif %}
+        <span class="dash-sub">{{ notification.created_at|date:"j M Y, H:i" }}{% if not notification.user %} · All staff{% endif %}</span>
+      </div>
+      {% if notification.message %}<p>{{ notification.message }}</p>{% endif %}
+      <div class="notification-card__actions">
+        {% if notification.url %}
+        <a class="btn btn--outline btn--sm" href="{% url 'dashboard:notification_open' notification.pk %}">
+          Open
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+        </a>
+        {% elif not notification.is_read %}
+        <a class="btn btn--outline btn--sm" href="{% url 'dashboard:notification_open' notification.pk %}">Mark as read</a>
+        {% endif %}
+        <a class="btn btn--ghost btn--sm" href="{% url 'dashboard:notification_delete' notification.pk %}">Delete</a>
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="dash-pagination" aria-label="Notification pagination">
+  <span class="dash-pagination__status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  <div class="dash-pagination__links">
+    {% if page_obj.has_previous %}
+    <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+    {% endif %}
+  </div>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="dash-card">
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-inbox"></use></svg>
+    <h3>{% if status or level %}No notifications match these filters{% else %}No notifications yet{% endif %}</h3>
+    <p>{% if status or level %}Try clearing the filters.{% else %}New enquiries and staff announcements will appear here.{% endif %}</p>
+    {% if status or level %}
+    <a class="btn btn--outline btn--sm" href="{% url 'dashboard:notification_list' %}">Clear filters</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

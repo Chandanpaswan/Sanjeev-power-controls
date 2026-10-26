@@ -1,0 +1,72 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{% if mode == 'create' %}Add category{% else %}Edit category{% endif %}{% endblock %}
+{% block eyebrow %}Catalogue{% endblock %}
+{% block page_title %}{% if mode == 'create' %}Add category{% else %}Edit category{% endif %}{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:category_list' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+  Back to categories
+</a>
+{% endblock %}
+
+{% block content %}
+{% if category %}
+<p class="dash-lede">Editing <strong>{{ category.name }}</strong> · {{ category.products.count }} linked product{{ category.products.count|pluralize }}.</p>
+{% else %}
+<p class="dash-lede">Categories group products in the public catalogue and footer navigation.</p>
+{% endif %}
+
+<form method="post" class="dash-form dash-form--narrow" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+  <div class="form-status is-visible" role="alert">
+    {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+  </div>
+  {% endif %}
+
+  <section class="dash-card">
+    <header class="dash-card__head">
+      <div>
+        <h2>Category details</h2>
+        <p>Name, URL slug and optional description.</p>
+      </div>
+    </header>
+
+    <div class="field-grid">
+      <div class="field field--full{% if form.name.errors %} has-error{% endif %}">
+        <label for="{{ form.name.id_for_label }}">Name <span class="req">*</span></label>
+        {{ form.name }}
+        {% for error in form.name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="field field--full{% if form.slug.errors %} has-error{% endif %}">
+        <label for="{{ form.slug.id_for_label }}">URL slug</label>
+        {{ form.slug }}
+        <span class="hint">{{ form.slug.help_text }}</span>
+        {% for error in form.slug.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="field field--full{% if form.description.errors %} has-error{% endif %}">
+        <label for="{{ form.description.id_for_label }}">Description</label>
+        {{ form.description }}
+        <span class="hint">Optional. Used on the category filter and catalogue context.</span>
+        {% for error in form.description.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+    </div>
+
+    <div class="dash-form__actions">
+      <button class="btn btn--primary" type="submit">
+        {% if mode == 'create' %}Create category{% else %}Save changes{% endif %}
+      </button>
+      <a class="btn btn--ghost" href="{% url 'dashboard:category_list' %}">Cancel</a>
+      {% if category and not category.products.exists %}
+      <a class="dash-danger-link" href="{% url 'dashboard:category_delete' category.pk %}">
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+        Delete category
+      </a>
+      {% endif %}
+    </div>
+  </section>
+</form>
+{% endblock %}

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Sanjeev Power Controls emblem">
+  <title>Sanjeev Power Controls emblem</title>
+<g>
+    <rect x="54.25" y="1" width="11.5" height="16" rx="2.6" fill="#0B1F3A" transform="rotate(0.0 60 60)"/>
+    <rect x="54.25" y="1" width="11.5" height="16" rx="2.6" fill="#0B1F3A" transform="rotate(30.0 60 60)"/>
+    <rect x="54.25" y="1" width="11.5" height="16" rx="2.6" fill="#0B1F3A" transform="rotate(60.0 60 60)"/>
+    <rect x="54.25" y="1" width="11.5" height="16" rx="2.6" fill="#0B1F3A" transform="rotate(90.0 60 60)"/>
+    <rect x="54.25" y="1" width="11.5" height="16" rx="2.6" fill="#0B1F3A" transform="rotate(120.0 60 60)"/>
+    <rect x="54.25" y="1" width="11.5" height="16" rx="2.6" fill="#0B1F3A" transform="rotate(150.0 60 60)"/>
+    <rect x="54.25" y="1" width="11.5" height="16" rx="2.6" fill="#0B1F3A" transform="rotate(180.0 60 60)"/>
+    <rect x="54.25" y="1" width="11.5" height="16" rx="2.6" fill="#0B1F3A" transform="rotate(210.0 60 60)"/>
+    <rect x="54.25" y="1" width="11.5" height="16" rx="2.6" fill="#0B1F3A" transform="rotate(240.0 60 60)"/>
+    <rect x="54.25" y="1" width="11.5" height="16" rx="2.6" fill="#0B1F3A" transform="rotate(270.0 60 60)"/>
+    <rect x="54.25" y="1" width="11.5" height="16" rx="2.6" fill="#0B1F3A" transform="rotate(300.0 60 60)"/>
+    <rect x="54.25" y="1" width="11.5" height="16" rx="2.6" fill="#0B1F3A" transform="rotate(330.0 60 60)"/>
+    <path fill="#0B1F3A" fill-rule="evenodd" d="M14,60 a46,46 0 1,0 92,0 a46,46 0 1,0 -92,0 M24,60 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0"/>
+    <circle cx="60" cy="60" r="35.5" fill="#164E8A"/>
+    <circle cx="60" cy="60" r="34.4" fill="none" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1.8"/>
+    <path d="M68 24 L44 63 H58 L52 96 L79 54 H64 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="5.5" stroke-linejoin="round"/>
+    <path d="M68 24 L44 63 H58 L52 96 L79 54 H64 Z" fill="#D92332"/>
+    <path d="M68 24 L44 63 H53 L63 42 Z" fill="#F4575F" opacity=".45"/>
+  </g>
+</svg>

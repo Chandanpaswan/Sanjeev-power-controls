@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+  <title id="title">Illustrative render of a diesel fuel filter assembly</title>
+  <desc id="desc">Studio-style illustration of a fuel filter assembly with a filter head, primer pump, two filter canisters and metal fittings. Illustrative product visual, not a photograph.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F8FAFC"/>
+      <stop offset="0.55" stop-color="#EEF3F8"/>
+      <stop offset="1" stop-color="#E3EAF2"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#0B1F3A" stroke-opacity="0.045" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="head" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1C436D"/>
+      <stop offset="0.5" stop-color="#0B1F3A"/>
+      <stop offset="1" stop-color="#071628"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F5F8FB"/>
+      <stop offset="0.4" stop-color="#BAC6D3"/>
+      <stop offset="0.6" stop-color="#E9EEF4"/>
+      <stop offset="1" stop-color="#8E9DAD"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0A2A4D"/>
+      <stop offset="0.18" stop-color="#164E8A"/>
+      <stop offset="0.45" stop-color="#2D6BA4"/>
+      <stop offset="0.75" stop-color="#164E8A"/>
+      <stop offset="1" stop-color="#082340"/>
+    </linearGradient>
+    <linearGradient id="bowl" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#BBD9EE" stop-opacity="0.85"/>
+      <stop offset="0.3" stop-color="#E8F4FC" stop-opacity="0.92"/>
+      <stop offset="0.7" stop-color="#CFE7F6" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#A9CBE2" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="element" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#C7D2DE"/>
+      <stop offset="0.3" stop-color="#F6F9FC"/>
+      <stop offset="0.65" stop-color="#E0E7EF"/>
+      <stop offset="1" stop-color="#B4C1CF"/>
+    </linearGradient>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="220%">
+      <feDropShadow dx="0" dy="20" stdDeviation="20" flood-color="#0B1F3A" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#grid)"/>
+  <ellipse cx="400" cy="508" rx="245" ry="38" fill="#0B1F3A" opacity="0.09"/>
+
+  <!-- mounting bracket -->
+  <g filter="url(#shadow)">
+    <rect x="246" y="196" width="30" height="280" rx="8" fill="#64748B"/>
+    <rect x="246" y="196" width="12" height="280" rx="6" fill="#94A3B8"/>
+    <circle cx="261" cy="240" r="7" fill="#334155"/>
+    <circle cx="261" cy="430" r="7" fill="#334155"/>
+
+    <!-- filter head -->
+    <rect x="266" y="170" width="282" height="84" rx="14" fill="url(#head)"/>
+    <rect x="266" y="170" width="282" height="6" rx="3" fill="#2E5A8A" opacity="0.7"/>
+    <rect x="292" y="188" width="88" height="10" rx="5" fill="#FFFFFF" opacity="0.08"/>
+
+    <!-- primer pump -->
+    <rect x="372" y="122" width="62" height="58" rx="10" fill="#0B1F3A"/>
+    <rect x="380" y="116" width="46" height="16" rx="8" fill="#D92332"/>
+    <rect x="386" y="120" width="34" height="5" rx="2.5" fill="#F4575F" opacity="0.65"/>
+    <ellipse cx="403" cy="173" rx="24" ry="7" fill="#071628"/>
+
+    <!-- ports -->
+    <rect x="236" y="196" width="38" height="26" rx="6" fill="url(#metal)"/>
+    <rect x="220" y="202" width="22" height="14" rx="4" fill="url(#metal)"/>
+    <path d="M220 209H186" stroke="#64748B" stroke-width="10" stroke-linecap="round"/>
+    <path d="M186 209H170" stroke="#334155" stroke-width="14" stroke-linecap="round"/>
+    <rect x="540" y="196" width="38" height="26" rx="6" fill="url(#metal)"/>
+    <rect x="566" y="202" width="22" height="14" rx="4" fill="url(#metal)"/>
+    <path d="M588 209H614" stroke="#64748B" stroke-width="10" stroke-linecap="round"/>
+    <path d="M614 209H630" stroke="#334155" stroke-width="14" stroke-linecap="round"/>
+
+    <!-- head-to-canister couplings -->
+    <rect x="296" y="248" width="46" height="20" rx="5" fill="url(#metal)"/>
+    <rect x="470" y="248" width="46" height="20" rx="5" fill="url(#metal)"/>
+
+    <!-- left canister -->
+    <path d="M298 262h80v178c0 10-18 18-40 18s-40-8-40-18Z" fill="url(#blue)"/>
+    <ellipse cx="338" cy="262" rx="40" ry="12" fill="#1E5A96"/>
+    <rect x="298" y="306" width="80" height="8" fill="#0B1F3A" opacity="0.28"/>
+    <rect x="298" y="400" width="80" height="8" fill="#D92332"/>
+    <ellipse cx="338" cy="444" rx="40" ry="12" fill="#0A2A4D"/>
+    <ellipse cx="338" cy="442" rx="22" ry="6" fill="#07182D"/>
+
+    <!-- right canister (clear bowl) -->
+    <path d="M434 268h84v172c0 12-19 20-42 20s-42-8-42-20Z" fill="url(#bowl)" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="2"/>
+    <ellipse cx="476" cy="268" rx="42" ry="13" fill="#EAF5FC" fill-opacity="0.9"/>
+    <rect x="452" y="292" width="48" height="128" rx="6" fill="url(#element)"/>
+    <g stroke="#97A7B7" stroke-width="1.2" opacity="0.8">
+      <path d="M458 296v120M464 296v120M470 296v120M477 296v120M483 296v120M489 296v120M495 296v120"/>
+    </g>
+    <path d="M448 430h56v10c0 5-12 8-28 8s-28-3-28-8Z" fill="#CBD5E1" fill-opacity="0.7"/>
+    <rect x="462" y="448" width="28" height="16" rx="5" fill="url(#metal)"/>
+    <circle cx="476" cy="472" r="6" fill="#0B1F3A"/>
+  </g>
+
+  <rect x="306" y="270" width="7" height="150" rx="3.5" fill="#FFFFFF" opacity="0.15"/>
+  <rect x="444" y="276" width="6" height="150" rx="3" fill="#FFFFFF" opacity="0.55"/>
+</svg>

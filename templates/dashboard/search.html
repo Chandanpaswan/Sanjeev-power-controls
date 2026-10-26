@@ -1,0 +1,68 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Search{% endblock %}
+{% block eyebrow %}Dashboard{% endblock %}
+{% block page_title %}Search{% endblock %}
+
+{% block content %}
+<form class="dash-filter" method="get" action="{% url 'dashboard:search' %}" role="search">
+  <div class="dash-filter__search">
+    <label class="visually-hidden" for="global-q">Search everything</label>
+    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+    <input id="global-q" type="search" name="q" value="{{ query }}" placeholder="Products, enquiries, pages, blog posts, media…" autofocus>
+  </div>
+  <button class="btn btn--navy btn--sm" type="submit">Search</button>
+  {% if query %}<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:search' %}">Reset</a>{% endif %}
+</form>
+
+{% if searched %}
+<p class="dash-lede">Showing matches for “{{ query }}”. Results are limited to records your account is allowed to view.</p>
+
+{% if groups %}
+<div class="search-groups">
+  {% for group in groups %}
+  <section class="dash-card search-group">
+    <header class="dash-card__head">
+      <div>
+        <h2>
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{{ group.icon }}"></use></svg>
+          {{ group.label }}
+          <span class="status-pill status-pill--neutral">{{ group.items|length }}</span>
+        </h2>
+      </div>
+      <a class="link-arrow" href="{{ group.more_url }}">
+        View all
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+      </a>
+    </header>
+    <ul class="search-results">
+      {% for item in group.items %}
+      <li>
+        <a href="{{ item.url }}">{{ item.title }}</a>
+        {% if item.subtitle %}<span class="dash-sub">{{ item.subtitle }}</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endfor %}
+</div>
+{% else %}
+<div class="dash-card">
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+    <h3>No matching records</h3>
+    <p>Nothing matched “{{ query }}” in the records you can access. Try a different term.</p>
+  </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="dash-card">
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+    <h3>Search the dashboard</h3>
+    <p>Enter at least two characters to search products, categories, enquiries, customers, pages, blog posts, media, testimonials, FAQs, banners, navigation and staff accounts.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

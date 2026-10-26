@@ -1,8 +1,35 @@
-.DS_Store
-Thumbs.db
+# Python / Django
+__pycache__/
+*.py[cod]
+*.sqlite3
+db.sqlite3
+db.sqlite3-journal
+*.log
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Uploaded and generated files
+media/
+staticfiles/
+backups/
+dist/
+build/
+
+# Tooling
+.venv/
+venv/
 .vscode/
 .idea/
-.env
-*.log
+.DS_Store
+Thumbs.db
 node_modules/
-dist/
+npm-debug.log*
+yarn-error.log*
+
+# Test and coverage output
+.coverage
+htmlcov/
+.pytest_cache/

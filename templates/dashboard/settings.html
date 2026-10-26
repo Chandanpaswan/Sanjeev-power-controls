@@ -1,0 +1,202 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Website settings{% endblock %}
+{% block eyebrow %}Content management{% endblock %}
+{% block page_title %}Website settings{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{% url 'core:home' %}" target="_blank" rel="noopener">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-external"></use></svg>
+  Preview website
+</a>
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">These values are stored in the database and used across the public website. Contact fields stay blank until verified details are supplied — templates show a clearly marked placeholder instead.</p>
+
+<div class="notice notice--warn">
+  <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+  <p><strong>Do not publish unverified details.</strong> Phone numbers, email addresses, the business address, business hours and social profiles must be confirmed by the business before launch.</p>
+</div>
+
+<form method="post" class="dash-form" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+  <div class="form-status is-visible" role="alert">
+    {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="settings-grid">
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Brand &amp; home page</h2>
+          <p>Company name, tagline and the hero copy.</p>
+        </div>
+      </header>
+
+      <div class="field-grid">
+        <div class="field field--full{% if form.company_name.errors %} has-error{% endif %}">
+          <label for="{{ form.company_name.id_for_label }}">Company name</label>
+          {{ form.company_name }}
+          {% for error in form.company_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field field--full{% if form.tagline.errors %} has-error{% endif %}">
+          <label for="{{ form.tagline.id_for_label }}">Tagline</label>
+          {{ form.tagline }}
+          <span class="hint">Shown in the footer and the organisation structured data.</span>
+          {% for error in form.tagline.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field field--full{% if form.hero_heading.errors %} has-error{% endif %}">
+          <label for="{{ form.hero_heading.id_for_label }}">Hero heading</label>
+          {{ form.hero_heading }}
+          {% for error in form.hero_heading.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field field--full{% if form.hero_description.errors %} has-error{% endif %}">
+          <label for="{{ form.hero_description.id_for_label }}">Hero description</label>
+          {{ form.hero_description }}
+          {% for error in form.hero_description.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Contact details</h2>
+          <p>Leave a field blank to keep the public placeholder.</p>
+        </div>
+      </header>
+
+      <div class="field-grid">
+        <div class="field{% if form.contact_phone.errors %} has-error{% endif %}">
+          <label for="{{ form.contact_phone.id_for_label }}">Business phone</label>
+          {{ form.contact_phone }}
+          <span class="hint">{{ form.contact_phone.help_text }}</span>
+          {% for error in form.contact_phone.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field{% if form.contact_email.errors %} has-error{% endif %}">
+          <label for="{{ form.contact_email.id_for_label }}">Contact email</label>
+          {{ form.contact_email }}
+          {% for error in form.contact_email.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field{% if form.whatsapp_number.errors %} has-error{% endif %}">
+          <label for="{{ form.whatsapp_number.id_for_label }}">WhatsApp number</label>
+          {{ form.whatsapp_number }}
+          <span class="hint">{{ form.whatsapp_number.help_text }}</span>
+          {% for error in form.whatsapp_number.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field{% if form.hours.errors %} has-error{% endif %}">
+          <label for="{{ form.hours.id_for_label }}">Business hours</label>
+          {{ form.hours }}
+          {% for error in form.hours.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field field--full{% if form.business_address.errors %} has-error{% endif %}">
+          <label for="{{ form.business_address.id_for_label }}">Business address</label>
+          {{ form.business_address }}
+          <span class="hint">{{ form.business_address.help_text }}</span>
+          {% for error in form.business_address.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field field--full{% if form.map_embed_url.errors %} has-error{% endif %}">
+          <label for="{{ form.map_embed_url.id_for_label }}">Google Maps embed URL</label>
+          {{ form.map_embed_url }}
+          <span class="hint">{{ form.map_embed_url.help_text }}</span>
+          {% for error in form.map_embed_url.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Footer &amp; social</h2>
+          <p>Footer summary and verified social profiles.</p>
+        </div>
+      </header>
+
+      <div class="field-grid">
+        <div class="field field--full{% if form.footer_description.errors %} has-error{% endif %}">
+          <label for="{{ form.footer_description.id_for_label }}">Footer description</label>
+          {{ form.footer_description }}
+          {% for error in form.footer_description.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field{% if form.facebook_url.errors %} has-error{% endif %}">
+          <label for="{{ form.facebook_url.id_for_label }}">Facebook URL</label>
+          {{ form.facebook_url }}
+          {% for error in form.facebook_url.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field{% if form.instagram_url.errors %} has-error{% endif %}">
+          <label for="{{ form.instagram_url.id_for_label }}">Instagram URL</label>
+          {{ form.instagram_url }}
+          {% for error in form.instagram_url.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field{% if form.linkedin_url.errors %} has-error{% endif %}">
+          <label for="{{ form.linkedin_url.id_for_label }}">LinkedIn URL</label>
+          {{ form.linkedin_url }}
+          {% for error in form.linkedin_url.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field{% if form.youtube_url.errors %} has-error{% endif %}">
+          <label for="{{ form.youtube_url.id_for_label }}">YouTube URL</label>
+          {{ form.youtube_url }}
+          {% for error in form.youtube_url.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <aside class="dash-card dash-card--quiet">
+      <header class="dash-card__head">
+        <div>
+          <h2>Status</h2>
+          <p>Current public contact state.</p>
+        </div>
+      </header>
+      <ul class="check-status-list">
+        <li>
+          <span class="check-status {% if site.has_phone %}is-done{% endif %}">
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{% if site.has_phone %}check{% else %}close{% endif %}"></use></svg>
+          </span>
+          Phone
+          <span class="dash-sub">{% if site.has_phone %}{{ site.contact_phone }}{% else %}Placeholder{% endif %}</span>
+        </li>
+        <li>
+          <span class="check-status {% if site.contact_email %}is-done{% endif %}">
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{% if site.contact_email %}check{% else %}close{% endif %}"></use></svg>
+          </span>
+          Email
+          <span class="dash-sub">{% if site.contact_email %}{{ site.contact_email }}{% else %}Placeholder{% endif %}</span>
+        </li>
+        <li>
+          <span class="check-status {% if site.has_whatsapp %}is-done{% endif %}">
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{% if site.has_whatsapp %}check{% else %}close{% endif %}"></use></svg>
+          </span>
+          WhatsApp
+          <span class="dash-sub">{% if site.has_whatsapp %}{{ site.whatsapp_number }}{% else %}Not configured{% endif %}</span>
+        </li>
+        <li>
+          <span class="check-status {% if site.address_lines %}is-done{% endif %}">
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{% if site.address_lines %}check{% else %}close{% endif %}"></use></svg>
+          </span>
+          Address
+          <span class="dash-sub">{% if site.address_lines %}{{ site.address_lines|length }} line{{ site.address_lines|length|pluralize }}{% else %}Placeholder{% endif %}</span>
+        </li>
+        <li>
+          <span class="check-status {% if site.map_embed_url %}is-done{% endif %}">
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{% if site.map_embed_url %}check{% else %}close{% endif %}"></use></svg>
+          </span>
+          Map embed
+          <span class="dash-sub">{% if site.map_embed_url %}Configured{% else %}Not configured{% endif %}</span>
+        </li>
+      </ul>
+      <p class="dash-note">Last saved {{ site.updated_at|date:"j M Y, H:i" }}.</p>
+    </aside>
+  </div>
+
+  <div class="dash-sticky-actions">
+    <button class="btn btn--primary" type="submit">Save settings</button>
+    <a class="btn btn--ghost" href="{% url 'dashboard:overview' %}">Cancel</a>
+    <span class="dash-sub">Changes appear on the public website immediately.</span>
+  </div>
+</form>
+{% endblock %}

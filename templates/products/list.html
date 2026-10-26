@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Products — Sanjeev Power Controls{% endblock %}
+{% block description %}Browse the demonstration DG set parts catalogue: air filters, oil filters, fuel filter assemblies, alternator components and engine spare parts. Search and filter the sample listings.{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'core:home' %}">Home</a></li>
+      <li aria-current="page">Products</li>
+    </ol>
+    <p class="eyebrow eyebrow--light">Product catalogue</p>
+    <h1>DG set parts, ready for enquiry.</h1>
+    <p class="page-hero__lead">Search the demonstration catalogue by keyword or category. Every listing is sample content, and each specification must be verified before an order is accepted.</p>
+    <div class="page-hero__meta">
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-box"></use></svg>{{ total_count }} demo listing{{ total_count|pluralize }}</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>Search &amp; filter</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>Specifications unverified</span>
+    </div>
+  </div>
+</section>
+
+<section class="catalogue">
+  <div class="container">
+    <div class="notice notice--warn" data-reveal>
+      <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+      <p><strong>Demo catalogue:</strong> names, SKUs, descriptions and specifications are illustrative. Product images are renders, not photographs. Confirm part numbers, dimensions and fitment with the business before ordering.</p>
+    </div>
+
+    <div class="catalogue__intro">
+      <p>Use the search box and category chips below. Filtering runs on the server, so the results can be shared or bookmarked.</p>
+      <span class="demo-tag demo-tag--neutral">{{ total_count }} result{{ total_count|pluralize }}</span>
+    </div>
+
+    <form class="catalogue-toolbar" method="get" action="{% url 'products:list' %}" role="search">
+      <div class="catalogue-search">
+        <label class="visually-hidden" for="catalogue-q">Search products</label>
+        <div class="search{% if query %} has-value{% endif %}">
+          <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+          <input id="catalogue-q" type="search" name="q" value="{{ query }}" placeholder="Search by name, SKU or description" autocomplete="off" data-search-input>
+          <button class="search__clear" type="button" aria-label="Clear search" data-search-clear>
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-close"></use></svg>
+          </button>
+        </div>
+      </div>
+      <div class="catalogue-select">
+        <label class="visually-hidden" for="catalogue-category">Filter by category</label>
+        <select id="catalogue-category" name="category">
+          <option value="">All categories</option>
+          {% for category in categories %}
+          <option value="{{ category.slug }}" {% if selected_category and selected_category.pk == category.pk %}selected{% endif %}>{{ category.name }} ({{ category.active_count }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn btn--navy" type="submit">
+        Apply filters
+        <svg class="icon" aria-hidden="true"><use href="#icon-filter"></use></svg>
+      </button>
+      {% if query or selected_category %}
+      <a class="btn btn--outline" href="{% url 'products:list' %}">Reset</a>
+      {% endif %}
+    </form>
+
+    <div class="filter-chips" aria-label="Product categories">
+      <a class="filter-chip{% if not selected_category %} is-active{% endif %}" href="{% url 'products:list' %}{% if query %}?q={{ query|urlencode }}{% endif %}" {% if not selected_category %}aria-current="true"{% endif %}>All</a>
+      {% for category in categories %}
+      <a class="filter-chip{% if selected_category and selected_category.pk == category.pk %} is-active{% endif %}"
+         href="{% url 'products:list' %}?category={{ category.slug }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}"
+         {% if selected_category and selected_category.pk == category.pk %}aria-current="true"{% endif %}>
+        {{ category.name }} <span>{{ category.active_count }}</span>
+      </a>
+      {% endfor %}
+    </div>
+
+    <div class="results-bar" aria-live="polite">
+      <p>
+        <strong>{{ total_count }}</strong> demo product{{ total_count|pluralize }}
+        {% if selected_category %} in <strong>{{ selected_category.name }}</strong>{% endif %}
+        {% if query %} matching <strong>“{{ query }}”</strong>{% endif %}
+      </p>
+      {% if query or selected_category %}
+      <a class="results-bar__reset" href="{% url 'products:list' %}">Clear filters</a>
+      {% endif %}
+    </div>
+
+    {% if products %}
+    <div class="product-grid">
+      {% for product in products %}
+        {% include "includes/product_card.html" with product=product %}
+      {% endfor %}
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="pagination" aria-label="Catalogue pagination">
+      {% if page_obj.has_previous %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" rel="prev">
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-chevron-left"></use></svg>
+        Previous
+      </a>
+      {% else %}
+      <span class="page-link is-disabled"><svg class="icon icon--sm" aria-hidden="true"><use href="#icon-chevron-left"></use></svg>Previous</span>
+      {% endif %}
+
+      <span class="page-status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+      {% if page_obj.has_next %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" rel="next">
+        Next
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-chevron-right"></use></svg>
+      </a>
+      {% else %}
+      <span class="page-link is-disabled">Next<svg class="icon icon--sm" aria-hidden="true"><use href="#icon-chevron-right"></use></svg></span>
+      {% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state is-visible">
+      <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+      <h3>No products match this search</h3>
+      <p>Try a shorter keyword, a different category, or clear the filters to see the full demo catalogue.</p>
+      <a class="btn btn--navy btn--sm" href="{% url 'products:list' %}">Show all products</a>
+    </div>
+    {% endif %}
+
+    <div class="catalogue-help">
+      <div>
+        <h2>Can’t find the part?</h2>
+        <p>Send the part number, engine model or a photograph reference. An enquiry can be recorded without selecting a catalogue item.</p>
+      </div>
+      <a class="btn btn--primary" href="{% url 'core:contact' %}">
+        General enquiry
+        <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

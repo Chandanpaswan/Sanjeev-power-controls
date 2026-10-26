@@ -1,0 +1,206 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Reports &amp; analytics{% endblock %}
+{% block eyebrow %}Operations{% endblock %}
+{% block page_title %}Reports &amp; analytics{% endblock %}
+
+{% block page_actions %}
+{% if perms.enquiries.view_enquiry or perms.enquiries.view_customer %}
+<a class="btn btn--outline btn--sm" href="{% url 'dashboard:reports_export' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-file"></use></svg>
+  Export CSV
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">Figures for {{ today|date:"j F Y" }}, calculated from records in this database. No traffic, revenue or conversion estimates are generated.</p>
+
+<div class="stat-grid">
+  <article class="stat-card">
+    <span class="stat-card__icon stat-card__icon--blue"><svg class="icon" aria-hidden="true"><use href="#icon-inbox"></use></svg></span>
+    <span class="stat-card__value">{{ total_enquiries }}</span>
+    <span class="stat-card__label">Total enquiries</span>
+    <span class="stat-card__meta">{{ new_enquiries }} new · {{ open_enquiries }} open</span>
+  </article>
+  <article class="stat-card">
+    <span class="stat-card__icon stat-card__icon--green"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>
+    <span class="stat-card__value">{{ converted }}</span>
+    <span class="stat-card__label">Converted enquiries</span>
+    <span class="stat-card__meta">{{ conversion_rate }}% of all enquiries</span>
+  </article>
+  <article class="stat-card{% if followups_due %} stat-card--alert{% endif %}">
+    <span class="stat-card__icon stat-card__icon--red"><svg class="icon" aria-hidden="true"><use href="#icon-clock"></use></svg></span>
+    <span class="stat-card__value">{{ followups_due }}</span>
+    <span class="stat-card__label">Follow-ups due</span>
+    <span class="stat-card__meta">Open enquiries with a due follow-up date</span>
+  </article>
+  <article class="stat-card">
+    <span class="stat-card__icon stat-card__icon--blue"><svg class="icon" aria-hidden="true"><use href="#icon-box"></use></svg></span>
+    <span class="stat-card__value">{{ product_total }}</span>
+    <span class="stat-card__label">Catalogue products</span>
+    <span class="stat-card__meta">{{ active_products }} active · {{ category_total }} categories</span>
+  </article>
+</div>
+
+<div class="dash-columns">
+  <section class="dash-card">
+    <header class="dash-card__head">
+      <div>
+        <h2>Enquiries received</h2>
+        <p>Last six calendar months.</p>
+      </div>
+    </header>
+    {% if months %}
+    <div class="report-chart" role="img" aria-label="Enquiry volume by month">
+      {% for month in months %}
+      <div class="report-bar">
+        <span class="report-bar__value">{{ month.count }}</span>
+        <span class="report-bar__track"><span class="report-bar__fill" style="height: {{ month.width }}%"></span></span>
+        <span class="report-bar__label">{{ month.label }}<span>{{ month.year }}</span></span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="dash-empty dash-empty--sm"><p>No enquiry data for this period.</p></div>
+    {% endif %}
+  </section>
+
+  <aside class="dash-columns__side">
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Enquiry pipeline</h2>
+          <p>All-time status distribution.</p>
+        </div>
+      </header>
+      <ul class="report-status-list">
+        {% for status in status_summary %}
+        <li>
+          <div class="report-status-list__head">
+            <span>{{ status.label }}</span>
+            <strong>{{ status.count }}</strong>
+          </div>
+          <span class="report-track"><span class="report-track__fill report-track__fill--{{ status.css }}" style="width: {{ status.percent }}%"></span></span>
+          <span class="dash-sub">{{ status.percent }}%</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </aside>
+</div>
+
+{% if can_view_sales %}
+<div class="dash-columns">
+  <section class="dash-card dash-card--flush">
+    <header class="dash-card__head">
+      <div>
+        <h2>Enquiries by category</h2>
+        <p>Top categories by linked enquiries.</p>
+      </div>
+    </header>
+    {% if category_rows %}
+    <div class="table-wrap">
+      <table class="dash-table">
+        <thead>
+          <tr><th scope="col">Category</th><th scope="col">Products</th><th scope="col">Enquiries</th></tr>
+        </thead>
+        <tbody>
+          {% for row in category_rows %}
+          <tr>
+            <td>{{ row.name }}</td>
+            <td>{{ row.products }}</td>
+            <td>
+              <div class="report-inline">
+                <span class="report-track"><span class="report-track__fill" style="width: {{ row.width }}%"></span></span>
+                <strong>{{ row.enquiries }}</strong>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="dash-empty dash-empty--sm"><p>No categorised enquiries yet.</p></div>
+    {% endif %}
+  </section>
+
+  <aside class="dash-columns__side">
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Products with enquiries</h2>
+          <p>Most requested catalogue items.</p>
+        </div>
+      </header>
+      {% if top_products %}
+      <ol class="rank-list">
+        {% for product in top_products %}
+        <li>
+          <a href="{% url 'dashboard:product_edit' product.pk %}">{{ product.name }}</a>
+          <span class="status-pill status-pill--neutral">{{ product.enquiry_total }}</span>
+        </li>
+        {% endfor %}
+      </ol>
+      {% else %}
+      <div class="dash-empty dash-empty--sm"><p>No product enquiries yet.</p></div>
+      {% endif %}
+    </section>
+  </aside>
+</div>
+{% endif %}
+
+<div class="dash-columns">
+  <section class="dash-card">
+    <header class="dash-card__head">
+      <div>
+        <h2>Website content</h2>
+        <p>Managed records and their public visibility.</p>
+      </div>
+    </header>
+    <ul class="detail-list">
+      <li class="detail-row"><dt>Pages</dt><dd>{{ content.pages }} total · {{ content.published_pages }} published</dd></li>
+      <li class="detail-row"><dt>Blog posts</dt><dd>{{ content.posts }} total · {{ content.published_posts }} publicly visible</dd></li>
+      <li class="detail-row"><dt>Media files</dt><dd>{{ content.media }} in the library</dd></li>
+      <li class="detail-row"><dt>Testimonials</dt><dd>{{ content.testimonials }} total · {{ content.approved_testimonials }} approved and published</dd></li>
+      <li class="detail-row"><dt>FAQs</dt><dd>{{ content.faqs }} total · {{ content.published_faqs }} published</dd></li>
+    </ul>
+  </section>
+
+  <aside class="dash-columns__side">
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Customers</h2>
+          <p>Only visible with sales permissions.</p>
+        </div>
+      </header>
+      {% if customer_total is not None %}
+      <p class="report-big">{{ customer_total }}</p>
+      <p class="dash-sub">customer record{{ customer_total|pluralize }} in the CRM.</p>
+      <a class="btn btn--outline btn--sm" href="{% url 'dashboard:customer_list' %}">Open customers</a>
+      {% else %}
+      <p class="dash-note">Your role does not include access to customer records.</p>
+      {% endif %}
+    </section>
+
+    <section class="dash-card dash-card--quiet">
+      <header class="dash-card__head">
+        <div>
+          <h2>Exports</h2>
+        </div>
+      </header>
+      <div class="stack-actions">
+        <a class="btn btn--outline btn--sm" href="{% url 'dashboard:reports_export' %}">Dashboard report (CSV)</a>
+        {% if perms.enquiries.view_enquiry %}
+        <a class="btn btn--outline btn--sm" href="{% url 'dashboard:enquiry_export' %}">All enquiries (CSV)</a>
+        {% endif %}
+        {% if perms.enquiries.view_customer %}
+        <a class="btn btn--outline btn--sm" href="{% url 'dashboard:customer_export' %}">All customers (CSV)</a>
+        {% endif %}
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}

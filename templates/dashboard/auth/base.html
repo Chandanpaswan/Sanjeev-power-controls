@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Staff access{% endblock %} — Sanjeev Power Controls</title>
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#0B1F3A">
+  <link rel="icon" href="{% static 'images/branding/favicon.svg' %}" type="image/svg+xml">
+  <link rel="icon" href="{% static 'images/branding/favicon-32.png' %}" sizes="32x32" type="image/png">
+  <link rel="preload" href="{% static 'fonts/inter-400.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/montserrat-700.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dash-login-body">
+  {% include "includes/sprite.html" %}
+
+  <main class="login-shell">
+    <section class="login-panel login-panel--brand" aria-label="About this panel">
+      <div class="login-brand">
+        <img src="{% static 'images/branding/spc-logo-light.svg' %}" alt="Sanjeev Power Controls" width="312" height="96">
+        <p class="login-brand__tagline">Powering Performance. Ensuring Reliability.</p>
+      </div>
+      <div class="login-brand__body">
+        <p class="eyebrow eyebrow--light">Staff area</p>
+        <h1>{% block brand_heading %}Secure dashboard access.{% endblock %}</h1>
+        <p>{% block brand_body %}Access is limited to authorised staff accounts. Password resets are issued only for staff accounts registered with an email address.{% endblock %}</p>
+        <ul class="login-points">
+          <li><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>Session-based authentication</li>
+          <li><svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg>Staff-only access</li>
+          <li><svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>Reset links expire automatically</li>
+        </ul>
+      </div>
+      <p class="login-brand__note">Sanjeev Power Controls · administration</p>
+    </section>
+
+    <section class="login-panel login-panel--form">
+      <div class="login-form-wrap">
+        <a class="login-back" href="{% url 'dashboard:login' %}">
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+          Back to sign in
+        </a>
+
+        <div class="login-head">
+          <span class="login-head__icon"><svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg></span>
+          <h2>{% block heading %}Staff access{% endblock %}</h2>
+          <p>{% block lede %}{% endblock %}</p>
+        </div>
+
+        {% if form and form.non_field_errors %}
+        <div class="form-status is-visible" role="alert">
+          {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+        </div>
+        {% endif %}
+
+        {% if messages %}
+        <div class="login-messages">
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }} site-alert" role="status">{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block form %}{% endblock %}
+
+        {% block after_form %}
+        <p class="login-help">Need help? Contact the site administrator. Accounts and permissions are managed from the dashboard by a superuser.</p>
+        {% endblock %}
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{% if cms_page.body or cms_page.public_sections %}
+<section class="section section--light cms-content">
+  <div class="container">
+    {% if cms_page.body %}
+    <div class="rich-text cms-content__body" data-reveal>
+      {{ cms_page.body_html|safe }}
+    </div>
+    {% endif %}
+
+    {% if cms_page.public_sections %}
+    <div class="cms-sections">
+      {% for section in cms_page.public_sections %}
+      <article class="cms-section" data-reveal>
+        {% if section.display_image_url %}
+        <figure class="cms-section__media">
+          <img src="{{ section.display_image_url }}" alt="{{ section.display_alt }}" width="900" height="620" loading="lazy" decoding="async">
+        </figure>
+        {% endif %}
+        <div class="cms-section__body">
+          <h2>{{ section.heading }}</h2>
+          {% if section.body %}<div class="rich-text">{{ section.body_html|safe }}</div>{% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}

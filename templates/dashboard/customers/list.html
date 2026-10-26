@@ -1,0 +1,124 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Customers{% endblock %}
+{% block eyebrow %}Enquiries &amp; customers{% endblock %}
+{% block page_title %}Customers{% endblock %}
+
+{% block page_actions %}
+{% if perms.enquiries.add_customer %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:customer_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  Add customer
+</a>
+{% endif %}
+<a class="btn btn--outline btn--sm" href="{% url 'dashboard:customer_export' %}{% if querystring %}?{{ querystring }}{% endif %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-file"></use></svg>
+  Export CSV
+</a>
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ total_count }} matching customer{{ total_count|pluralize }} of {{ all_customer_count }} total. Customer records and internal notes are never shown on the public website.</p>
+
+<form class="dash-filter dash-filter--wrap" method="get" action="{% url 'dashboard:customer_list' %}" role="search">
+  <div class="dash-filter__search">
+    <label class="visually-hidden" for="customer-q">Search customers</label>
+    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+    <input id="customer-q" type="search" name="q" value="{{ query }}" placeholder="Search name, contact, email or phone">
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="customer-status">Status</label>
+    <select id="customer-status" name="status">
+      <option value="">Any status</option>
+      {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn btn--navy btn--sm" type="submit">Filter</button>
+  {% if query or status %}<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:customer_list' %}">Reset</a>{% endif %}
+</form>
+
+<section class="dash-card dash-card--flush">
+  {% if customers %}
+  <div class="table-wrap">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th scope="col">Customer</th>
+          <th scope="col">Contact</th>
+          <th scope="col">Enquiries</th>
+          <th scope="col">Status</th>
+          <th scope="col">Created</th>
+          <th scope="col" class="ta-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for customer in customers %}
+        <tr>
+          <td>
+            <a href="{% url 'dashboard:customer_detail' customer.pk %}">{{ customer.name }}</a>
+            {% if customer.company_address %}<span class="dash-sub">{{ customer.company_address|truncatechars:60 }}</span>{% endif %}
+          </td>
+          <td>
+            {{ customer.contact_person|default:"—" }}
+            {% if customer.email %}<span class="dash-sub">{{ customer.email }}</span>{% endif %}
+            {% if customer.phone %}<span class="dash-sub mono">{{ customer.phone }}</span>{% endif %}
+          </td>
+          <td>
+            <strong>{{ customer.enquiry_total }}</strong>
+            {% if customer.open_total %}<span class="dash-sub">{{ customer.open_total }} open</span>{% endif %}
+          </td>
+          <td><span class="status-pill status-pill--{{ customer.status_css }}">{{ customer.get_status_display }}</span></td>
+          <td>{{ customer.created_at|date:"j M Y" }}</td>
+          <td>
+            <div class="row-actions">
+              <a class="icon-btn" href="{% url 'dashboard:customer_detail' customer.pk %}" title="Open customer" aria-label="Open {{ customer.name }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-eye"></use></svg>
+              </a>
+              {% if perms.enquiries.change_customer %}
+              <a class="icon-btn" href="{% url 'dashboard:customer_edit' customer.pk %}" title="Edit" aria-label="Edit {{ customer.name }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+              </a>
+              {% endif %}
+              {% if perms.enquiries.delete_customer %}
+              <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:customer_delete' customer.pk %}" title="Delete" aria-label="Delete {{ customer.name }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="dash-pagination" aria-label="Customer pagination">
+    <span class="dash-pagination__status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <div class="dash-pagination__links">
+      {% if page_obj.has_previous %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-users"></use></svg>
+    <h3>{% if query or status %}No customers match these filters{% else %}No customers yet{% endif %}</h3>
+    <p>{% if query or status %}Try a different search term or clear the filters.{% else %}Convert a qualified enquiry or create a customer record manually.{% endif %}</p>
+    {% if query or status %}
+    <a class="btn btn--outline btn--sm" href="{% url 'dashboard:customer_list' %}">Clear filters</a>
+    {% elif perms.enquiries.add_customer %}
+    <a class="btn btn--primary btn--sm" href="{% url 'dashboard:customer_create' %}">Add customer</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ post.seo_title|default:post.title }} — Sanjeev Power Controls{% endblock %}
+{% block description %}{{ post.seo_description|default:post.excerpt|default:post.content|striptags|truncatechars:160 }}{% endblock %}
+{% block robots %}{% if post.noindex or not site_profile.allow_search_indexing %}noindex,nofollow{% else %}index,follow{% endif %}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ post.seo_title|default:post.title }}{% endblock %}
+{% block og_description %}{{ post.seo_description|default:post.excerpt|default:post.content|striptags|truncatechars:160 }}{% endblock %}
+
+{% block content %}
+<article class="article">
+  <header class="page-hero">
+    <div class="container">
+      <ol class="breadcrumb">
+        <li><a href="{% url 'core:home' %}">Home</a></li>
+        <li><a href="{% url 'blog:list' %}">Insights</a></li>
+        <li aria-current="page">{{ post.title|truncatechars:48 }}</li>
+      </ol>
+      {% if post.category %}<p class="eyebrow eyebrow--light">{{ post.category.name }}</p>{% endif %}
+      <h1>{{ post.title }}</h1>
+      {% if post.excerpt %}<p class="page-hero__lead">{{ post.excerpt }}</p>{% endif %}
+      <div class="page-hero__meta">
+        <span><svg class="icon" aria-hidden="true"><use href="#icon-clock"></use></svg><time datetime="{{ post.published_at|date:'Y-m-d' }}">{{ post.published_at|date:"j F Y" }}</time></span>
+        <span><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>{{ post.reading_minutes }} minute read</span>
+        {% if post.author %}<span><svg class="icon" aria-hidden="true"><use href="#icon-users"></use></svg>{{ post.author.get_full_name|default:post.author.username }}</span>{% endif %}
+      </div>
+    </div>
+  </header>
+
+  <section class="section section--white">
+    <div class="container article__layout">
+      <div class="article__body">
+        {% if post.display_image_url %}
+        <figure class="article__figure">
+          <img src="{{ post.display_image_url }}" alt="{{ post.display_alt }}" width="1000" height="560" loading="eager" decoding="async">
+        </figure>
+        {% endif %}
+        <div class="rich-text">
+          {{ post.content_html|safe }}
+        </div>
+
+        {% if post.tag_list %}
+        <div class="article__tags" aria-label="Article tags">
+          {% for tag in post.tag_list %}
+          <a class="filter-chip" href="{% url 'blog:list' %}?tag={{ tag|urlencode }}">{{ tag }}</a>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="notice">
+          <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+          <p><strong>Verify before ordering.</strong> Article content is general guidance. Confirm part numbers, dimensions, fitment and compatibility with the business before purchase.</p>
+        </div>
+      </div>
+
+      <aside class="article__aside">
+        <div class="article__card">
+          <h2>Need help with a part?</h2>
+          <p>Send the engine model, part number, quantity and application. The team can confirm the requirement before quoting.</p>
+          <a class="btn btn--primary btn--sm" href="{% url 'core:contact' %}">Send an enquiry</a>
+        </div>
+        <div class="article__card article__card--quiet">
+          <h2>Browse the catalogue</h2>
+          <p>Search demonstration parts by keyword or category.</p>
+          <a class="btn btn--outline btn--sm" href="{% url 'products:list' %}">View products</a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  {% if related_posts %}
+  <section class="section section--light">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-head__copy">
+          <p class="eyebrow">Keep reading</p>
+          <h2>Related articles</h2>
+        </div>
+      </div>
+      <div class="blog-grid blog-grid--three">
+        {% for related in related_posts %}
+        <article class="blog-card">
+          <a class="blog-card__media" href="{{ related.get_absolute_url }}" tabindex="-1" aria-hidden="true">
+            {% if related.display_image_url %}
+            <img src="{{ related.display_image_url }}" alt="{{ related.display_alt }}" width="640" height="400" loading="lazy" decoding="async">
+            {% else %}
+            <span class="blog-card__blank"><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg></span>
+            {% endif %}
+          </a>
+          <div class="blog-card__body">
+            <div class="blog-card__meta">
+              {% if related.category %}<span class="blog-tag">{{ related.category.name }}</span>{% endif %}
+              <time datetime="{{ related.published_at|date:'Y-m-d' }}">{{ related.published_at|date:"j M Y" }}</time>
+            </div>
+            <h2><a href="{{ related.get_absolute_url }}">{{ related.title }}</a></h2>
+            <p>{{ related.excerpt|default:related.content|striptags|truncatechars:120 }}</p>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+</article>
+{% endblock %}

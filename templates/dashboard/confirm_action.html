@@ -1,0 +1,35 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block eyebrow %}Confirmation required{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{{ cancel_url }}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+  Cancel
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="confirm-wrap">
+  <section class="dash-card confirm-card">
+    <span class="confirm-card__icon">
+      <svg class="icon" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+    </span>
+    <h2>{{ title }}</h2>
+    <p>{{ message }}</p>
+
+    <div class="notice">
+      <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+      <p><strong>{{ object_type|capfirst }}:</strong> {{ object_label }}</p>
+    </div>
+
+    <form method="post" action="" class="confirm-form">
+      {% csrf_token %}
+      <button class="btn btn--primary" type="submit">{{ confirm_label|default:"Continue" }}</button>
+      <a class="btn btn--ghost" href="{{ cancel_url }}">Cancel</a>
+    </form>
+  </section>
+</div>
+{% endblock %}

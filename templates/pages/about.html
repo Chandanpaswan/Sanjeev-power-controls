@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if cms_page.seo_title %}{{ cms_page.seo_title }}{% else %}About Us &mdash; {{ site_profile.company_name|default:"Sanjeev Power Controls" }}{% endif %}{% endblock %}
+{% block description %}{{ cms_page.seo_description|default:"About Sanjeev Power Controls: a demonstration company profile for a DG set parts manufacturer, with unverified business facts clearly marked for client confirmation." }}{% endblock %}
+{% block robots %}{% if cms_page.noindex or not site_profile.allow_search_indexing %}noindex,nofollow{% else %}index,follow{% endif %}{% endblock %}
+{% block canonical %}{{ cms_page.canonical_url|default:request.build_absolute_uri }}{% endblock %}
+{% block og_title %}{{ cms_page.seo_title|default:"About Us" }}{% endblock %}
+{% block og_description %}{{ cms_page.seo_description|default:cms_page.hero_description|default:"About Sanjeev Power Controls" }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'core:home' %}">Home</a></li>
+      <li aria-current="page">About Us</li>
+    </ol>
+    <p class="eyebrow eyebrow--light">{{ cms_page.hero_eyebrow|default:"Company profile" }}</p>
+    <h1>{{ cms_page.hero_heading|default:"A parts business built around verification." }}</h1>
+    <p class="page-hero__lead">{{ cms_page.hero_description|default:"This page demonstrates the company story structure. Verified history, facility details and certifications have not been supplied, so they are deliberately shown as placeholders rather than invented." }}</p>
+    <div class="page-hero__meta">
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>Demo profile</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>No certifications claimed</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>Client input required</span>
+    </div>
+  </div>
+</section>
+
+{% if cms_page.body or cms_page.public_sections %}
+{% include "includes/cms_content.html" %}
+{% else %}
+
+<section class="section section--white">
+  <div class="container split split--media-left">
+    <div class="split__media" data-reveal>
+      <figure class="split__figure split__figure--portrait">
+        <picture>
+          <source srcset="{% static 'images/industrial/alternator.webp' %}" type="image/webp">
+          <img src="{% static 'images/industrial/alternator.jpg' %}" alt="Close-up of an industrial alternator" width="900" height="1150" loading="lazy" decoding="async">
+        </picture>
+      </figure>
+      <div class="split__badge">
+        <strong>Illustrative photography</strong>
+        <span>Representative industrial image, not a photograph of a Sanjeev Power Controls facility.</span>
+      </div>
+    </div>
+
+    <div class="split__body" data-reveal data-reveal-delay="1">
+      <p class="eyebrow">Who we are</p>
+      <h2>DG set parts, presented with the details that matter.</h2>
+      <p>Sanjeev Power Controls is presented in this demo as a manufacturer and supplier of parts for diesel generator sets. The proposed website concentrates on three practical product families: filtration, engine spares and electrical components.</p>
+      <p>The site is designed so that product records, enquiry handling and company information can be maintained from a secure dashboard. All content on this build is sample material until the business confirms it.</p>
+      <div class="notice notice--warn">
+        <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+        <p><strong>Company facts are pending.</strong> Founding year, factory location, team size, production capacity, certifications, markets served and customer relationships must be supplied and verified before launch.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--light">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">Company facts</p>
+        <h2>The record stays empty until it is verified.</h2>
+        <p class="lead">A client demo should not fill gaps with plausible-sounding claims. These fields are ready for verified information.</p>
+      </div>
+      <div class="section-head__aside" data-reveal>
+        <span class="demo-tag">Awaiting client input</span>
+      </div>
+    </div>
+
+    <div class="about-facts">
+      <div class="fact-panel" data-reveal>
+        <div class="fact-panel__head">
+          <h3>Business profile</h3>
+          <span class="demo-tag demo-tag--neutral">Demo</span>
+        </div>
+        <dl class="fact-list">
+          <div class="fact-row"><dt>Established</dt><dd class="placeholder-value">To be confirmed</dd></div>
+          <div class="fact-row"><dt>Factory / office location</dt><dd class="placeholder-value">To be confirmed</dd></div>
+          <div class="fact-row"><dt>Team size</dt><dd class="placeholder-value">To be confirmed</dd></div>
+          <div class="fact-row"><dt>Production capacity</dt><dd class="placeholder-value">To be confirmed</dd></div>
+        </dl>
+      </div>
+      <div class="fact-panel" data-reveal data-reveal-delay="1">
+        <div class="fact-panel__head">
+          <h3>Compliance &amp; markets</h3>
+          <span class="demo-tag demo-tag--neutral">Demo</span>
+        </div>
+        <dl class="fact-list">
+          <div class="fact-row"><dt>Certifications</dt><dd class="placeholder-value">To be confirmed</dd></div>
+          <div class="fact-row"><dt>Quality approvals</dt><dd class="placeholder-value">To be confirmed</dd></div>
+          <div class="fact-row"><dt>Markets served</dt><dd class="placeholder-value">To be confirmed</dd></div>
+          <div class="fact-row"><dt>Customer references</dt><dd class="placeholder-value">To be confirmed</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">What we do</p>
+        <h2>Three product families, one enquiry path.</h2>
+        <p class="lead">The demo catalogue is organised to mirror common DG set maintenance requirements.</p>
+      </div>
+    </div>
+    <div class="value-grid value-grid--three">
+      <article class="value-card" data-reveal>
+        <div class="value-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-air"></use></svg></div>
+        <h3>Air, oil &amp; fuel filtration</h3>
+        <p>Intake elements, spin-on lubricant filters and fuel filter assemblies, each with a structured specification record.</p>
+      </article>
+      <article class="value-card" data-reveal data-reveal-delay="1">
+        <div class="value-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-engine"></use></svg></div>
+        <h3>Engine spare parts</h3>
+        <p>Configurable service kits and individual engine components, with contents confirmed per enquiry.</p>
+      </article>
+      <article class="value-card" data-reveal data-reveal-delay="2">
+        <div class="value-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-bolt"></use></svg></div>
+        <h3>Electrical components</h3>
+        <p>Alternator-related components for generator applications, with ratings and mounting confirmed against the requirement.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--light">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">How we work</p>
+        <h2>A proposed enquiry workflow.</h2>
+        <p class="lead">This sequence is demo positioning for the client to review and confirm — it is not a published service guarantee.</p>
+      </div>
+    </div>
+    <ol class="process">
+      <li data-reveal>
+        <span class="process__num">01</span>
+        <h3>Enquiry</h3>
+        <p>Share the part number, engine details, quantity and application.</p>
+      </li>
+      <li data-reveal data-reveal-delay="1">
+        <span class="process__num">02</span>
+        <h3>Verification</h3>
+        <p>Check the reference, dimensions and fitment assumptions with the customer.</p>
+      </li>
+      <li data-reveal data-reveal-delay="2">
+        <span class="process__num">03</span>
+        <h3>Quotation</h3>
+        <p>Issue commercial details only after the requirement is confirmed.</p>
+      </li>
+      <li data-reveal data-reveal-delay="3">
+        <span class="process__num">04</span>
+        <h3>Supply</h3>
+        <p>Prepare the agreed parts and packing against the order record.</p>
+      </li>
+      <li data-reveal>
+        <span class="process__num">05</span>
+        <h3>Follow-up</h3>
+        <p>Keep the enquiry reference available for repeat orders and support.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">Business values</p>
+        <h2>Principles for the working relationship.</h2>
+        <p class="lead">General operating principles, not verified credentials.</p>
+      </div>
+    </div>
+    <div class="value-grid">
+      <article class="value-card" data-reveal>
+        <div class="value-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-target"></use></svg></div>
+        <h3>Accuracy</h3>
+        <p>Confirm the requirement before quoting rather than guessing at compatibility.</p>
+      </article>
+      <article class="value-card" data-reveal data-reveal-delay="1">
+        <div class="value-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg></div>
+        <h3>Clarity</h3>
+        <p>State what is confirmed, what is proposed and what still needs verification.</p>
+      </article>
+      <article class="value-card" data-reveal data-reveal-delay="2">
+        <div class="value-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-clock"></use></svg></div>
+        <h3>Responsiveness</h3>
+        <p>Keep enquiries visible and tracked so follow-up does not depend on memory.</p>
+      </article>
+      <article class="value-card" data-reveal data-reveal-delay="3">
+        <div class="value-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg></div>
+        <h3>Accountability</h3>
+        <p>Record internal notes and status changes so the enquiry history is clear.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--light">
+  <div class="container">
+    <div class="cta-banner" data-reveal>
+      <div>
+        <p class="eyebrow eyebrow--light">Next step</p>
+        <h2>Review the catalogue, then tell us what is missing.</h2>
+        <p>Product data, company facts and quality documentation can be loaded through the dashboard once verified.</p>
+      </div>
+      <div class="cta-banner__actions">
+        <a class="btn btn--light" href="{% url 'products:list' %}">
+          Browse products
+          <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+        </a>
+        <a class="btn btn--ghost-light" href="{% url 'core:contact' %}">Contact us</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,100 @@
+{% load static %}
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col footer-brand">
+        <a href="{% url 'core:home' %}" aria-label="{{ site_profile.company_name|default:'Sanjeev Power Controls' }} — home">
+          <img src="{% static 'images/branding/spc-logo-light.svg' %}" alt="{{ site_profile.company_name|default:'Sanjeev Power Controls' }}" width="312" height="96">
+        </a>
+        <p>{{ site_profile.footer_description|default:"A demonstration website presenting DG set filtration, engine and electrical parts for enquiry-led supply." }}</p>
+        <p class="footer-tagline">{{ site_profile.tagline|default:"Powering Performance. Ensuring Reliability." }}</p>
+        {% if site_profile.social_links %}
+        <ul class="footer-social" aria-label="Social media">
+          {% for name, url in site_profile.social_links %}
+          <li><a href="{{ url }}" target="_blank" rel="noopener">{{ name }}</a></li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+
+      <div class="footer-col">
+        <h2 class="footer-title">Quick links</h2>
+        <ul class="footer-links">
+          {% if footer_menu %}
+            {% for item in footer_menu %}
+            <li><a href="{{ item.resolved_url }}"{% if item.open_in_new_tab %} target="_blank" rel="noopener"{% endif %}>{{ item.label }}</a></li>
+            {% endfor %}
+          {% else %}
+          <li><a href="{% url 'core:home' %}">Home</a></li>
+          <li><a href="{% url 'core:about' %}">About Us</a></li>
+          <li><a href="{% url 'products:list' %}">Products</a></li>
+          <li><a href="{% url 'core:quality' %}">Quality &amp; Applications</a></li>
+          <li><a href="{% url 'blog:list' %}">Blog</a></li>
+          <li><a href="{% url 'core:contact' %}">Contact Us</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h2 class="footer-title">Product categories</h2>
+        <ul class="footer-links">
+          {% for category in footer_categories %}
+          <li><a href="{% url 'products:list' %}?category={{ category.slug }}">{{ category.name }}</a></li>
+          {% empty %}
+          <li><a href="{% url 'products:list' %}">Browse the catalogue</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col--contact">
+        <h2 class="footer-title">Contact</h2>
+        <ul class="footer-contact">
+          <li>
+            <svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg>
+            {% if site_profile.has_phone %}
+            <a href="{{ site_profile.tel_href }}">{{ site_profile.contact_phone }}</a>
+            {% else %}
+            <span class="placeholder-value">Verified business phone to be added</span>
+            {% endif %}
+          </li>
+          <li>
+            <svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
+            {% if site_profile.contact_email %}
+            <a href="mailto:{{ site_profile.contact_email }}">{{ site_profile.contact_email }}</a>
+            {% else %}
+            <span class="placeholder-value">Verified business email to be added</span>
+            {% endif %}
+          </li>
+          <li>
+            <svg class="icon" aria-hidden="true"><use href="#icon-map-pin"></use></svg>
+            {% if site_profile.address_lines %}
+            <span>{% for line in site_profile.address_lines %}{{ line }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</span>
+            {% else %}
+            <span class="placeholder-value">Verified factory / office address to be added</span>
+            {% endif %}
+          </li>
+        </ul>
+        {% if site_profile.has_whatsapp %}
+        <a class="footer-whatsapp" href="{{ site_profile.whatsapp_enquiry_link }}" target="_blank" rel="noopener">
+          <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+          Chat on WhatsApp
+        </a>
+        {% endif %}
+        <p class="footer-demo-note">
+          <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+          <span>Demo build. Contact details, specifications and company claims must be verified before launch.</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>{% if site_profile.copyright_text %}{{ site_profile.copyright_text }}{% else %}&copy; {% now "Y" %} {{ site_profile.company_name|default:"Sanjeev Power Controls" }}. All rights reserved.{% endif %}</p>
+      <div class="footer-legal">
+        <a href="{% url 'core:privacy' %}">Privacy</a>
+        <a href="{% url 'core:terms' %}">Terms</a>
+        <a href="{% url 'core:credits' %}">Image credits</a>
+        <a href="{% url 'core:sitemap' %}">Sitemap</a>
+      </div>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,138 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Website pages{% endblock %}
+{% block eyebrow %}Website content{% endblock %}
+{% block page_title %}Website pages{% endblock %}
+
+{% block page_actions %}
+{% if perms.cms.add_page %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:page_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  Add page
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ total_count }} managed page{{ total_count|pluralize }} · {{ published_count }} published · {{ draft_count }} draft. Draft pages are never shown on the public website.</p>
+
+<form class="dash-filter dash-filter--wrap" method="get" action="{% url 'dashboard:page_list' %}" role="search">
+  <div class="dash-filter__search">
+    <label class="visually-hidden" for="page-q">Search pages</label>
+    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+    <input id="page-q" type="search" name="q" value="{{ query }}" placeholder="Search title, slug or heading">
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="page-status">Status</label>
+    <select id="page-status" name="status">
+      <option value="">Any status</option>
+      {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn btn--navy btn--sm" type="submit">Filter</button>
+  {% if query or status %}<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:page_list' %}">Reset</a>{% endif %}
+</form>
+
+<section class="dash-card dash-card--flush">
+  {% if pages %}
+  <div class="table-wrap">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th scope="col">Page</th>
+          <th scope="col">Sections</th>
+          <th scope="col">Visibility</th>
+          <th scope="col">SEO</th>
+          <th scope="col">Updated</th>
+          <th scope="col" class="ta-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for page in pages %}
+        <tr>
+          <td>
+            <a href="{% url 'dashboard:page_edit' page.pk %}">{{ page.title }}</a>
+            <span class="dash-sub mono">/{{ page.slug }}/</span>
+          </td>
+          <td>{{ page.section_count }}</td>
+          <td>
+            <div class="pill-stack">
+              <span class="status-pill status-pill--{% if page.status == 'published' %}active{% else %}closed{% endif %}">{{ page.get_status_display }}</span>
+              {% if page.noindex %}<span class="status-pill status-pill--neutral">Noindex</span>{% endif %}
+            </div>
+          </td>
+          <td>
+            {% if page.seo_title and page.seo_description %}
+            <span class="status-pill status-pill--active">Complete</span>
+            {% else %}
+            <span class="status-pill status-pill--progress">Needs review</span>
+            {% endif %}
+          </td>
+          <td><span title="{{ page.updated_at }}">{{ page.updated_at|date:"j M Y" }}</span></td>
+          <td>
+            <div class="row-actions">
+              {% if page.status == 'published' %}
+              <a class="icon-btn" href="{{ page.get_absolute_url }}" target="_blank" rel="noopener" title="View public page" aria-label="View {{ page.title }} on the public site">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-eye"></use></svg>
+              </a>
+              {% endif %}
+              {% if perms.cms.change_page %}
+              <a class="icon-btn" href="{% url 'dashboard:page_edit' page.pk %}" title="Edit" aria-label="Edit {{ page.title }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+              </a>
+              <form method="post" action="{% url 'dashboard:page_toggle_status' page.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="icon-btn" type="submit" title="{% if page.status == 'published' %}Unpublish{% else %}Publish{% endif %}" aria-label="{% if page.status == 'published' %}Unpublish{% else %}Publish{% endif %} {{ page.title }}">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{% if page.status == 'published' %}lock{% else %}check{% endif %}"></use></svg>
+                </button>
+              </form>
+              {% endif %}
+              {% if perms.cms.delete_page %}
+              <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:page_delete' page.pk %}" title="Delete" aria-label="Delete {{ page.title }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="dash-pagination" aria-label="Page pagination">
+    <span class="dash-pagination__status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <div class="dash-pagination__links">
+      {% if page_obj.has_previous %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>
+    <h3>{% if query or status %}No pages match these filters{% else %}No managed pages yet{% endif %}</h3>
+    <p>{% if query or status %}Try a different search term or clear the filters.{% else %}Create a page to manage hero content, body copy and page sections.{% endif %}</p>
+    {% if query or status %}
+    <a class="btn btn--outline btn--sm" href="{% url 'dashboard:page_list' %}">Clear filters</a>
+    {% elif perms.cms.add_page %}
+    <a class="btn btn--primary btn--sm" href="{% url 'dashboard:page_create' %}">Add page</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+
+<div class="notice">
+  <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+  <p><strong>Managed content.</strong> The home, about, quality and contact pages use these records when available and keep their built-in layout otherwise. Draft records fall back to the built-in content.</p>
+</div>
+{% endblock %}

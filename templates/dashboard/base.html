@@ -1,0 +1,251 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Dashboard{% endblock %} — Sanjeev Power Controls</title>
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#0B1F3A">
+  <link rel="icon" href="{% static 'images/branding/favicon.svg' %}" type="image/svg+xml">
+  <link rel="icon" href="{% static 'images/branding/favicon-32.png' %}" sizes="32x32" type="image/png">
+  <link rel="preload" href="{% static 'fonts/inter-400.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/montserrat-700.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body class="dash-body">
+  <a class="skip-link" href="#dash-main">Skip to content</a>
+  {% include "includes/sprite.html" %}
+
+  <div class="dash-shell" data-dash-shell>
+    <aside class="dash-sidebar" id="dash-sidebar" aria-label="Dashboard navigation">
+      <div class="dash-sidebar__head">
+        <a class="dash-brand" href="{% url 'dashboard:overview' %}">
+          <img src="{% static 'images/branding/spc-logo-light.svg' %}" alt="Sanjeev Power Controls" width="312" height="96">
+        </a>
+        <button class="dash-sidebar__close" type="button" data-dash-close aria-label="Close navigation">
+          <svg class="icon" aria-hidden="true"><use href="#icon-close"></use></svg>
+        </button>
+      </div>
+
+      <nav class="dash-nav" aria-label="Main dashboard sections">
+        <a href="{% url 'dashboard:overview' %}" {% if request.resolver_match.url_name == 'overview' %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-grid"></use></svg>
+          <span>Dashboard</span>
+        </a>
+
+        {% if perms.products.view_product %}
+        <a href="{% url 'dashboard:product_list' %}" {% if 'product' in request.resolver_match.url_name and 'category' not in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-box"></use></svg>
+          <span>Products</span>
+        </a>
+        {% endif %}
+        {% if perms.products.view_category %}
+        <a href="{% url 'dashboard:category_list' %}" {% if 'category' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-layers"></use></svg>
+          <span>Product Categories</span>
+        </a>
+        {% endif %}
+        {% if perms.enquiries.view_enquiry %}
+        <a href="{% url 'dashboard:enquiry_list' %}" {% if 'enquiry' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-inbox"></use></svg>
+          <span>Enquiries / Leads</span>
+          {% if new_enquiry_count %}<span class="dash-badge">{{ new_enquiry_count }}</span>{% endif %}
+        </a>
+        {% endif %}
+        {% if perms.enquiries.view_customer %}
+        <a href="{% url 'dashboard:customer_list' %}" {% if 'customer' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-users"></use></svg>
+          <span>Customers</span>
+        </a>
+        {% endif %}
+
+        {% if perms.cms.view_page or perms.cms.view_blogpost or perms.cms.view_mediaasset %}
+        <p class="dash-sidebar__label">Website content</p>
+        {% endif %}
+        {% if perms.cms.view_page %}
+        <a href="{% url 'dashboard:page_list' %}" {% if 'page' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>
+          <span>Website Pages</span>
+        </a>
+        {% endif %}
+        {% if perms.cms.view_blogpost %}
+        <a href="{% url 'dashboard:blog_list' %}" {% if 'blog' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+          <span>Blog Management</span>
+        </a>
+        {% endif %}
+        {% if perms.cms.view_mediaasset %}
+        <a href="{% url 'dashboard:media_list' %}" {% if 'media' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-image"></use></svg>
+          <span>Media Library</span>
+        </a>
+        {% endif %}
+        {% if perms.cms.view_page or perms.cms.view_blogpost or perms.cms.view_testimonial or perms.cms.view_faq or perms.cms.view_banner or perms.cms.view_menuitem or perms.cms.view_redirectrule %}
+        <p class="dash-sidebar__label">Site content</p>
+        {% endif %}
+        {% if perms.cms.view_testimonial %}
+        <a href="{% url 'dashboard:testimonial_list' %}" {% if 'testimonial' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-star"></use></svg>
+          <span>Testimonials</span>
+        </a>
+        {% endif %}
+        {% if perms.cms.view_faq %}
+        <a href="{% url 'dashboard:faq_list' %}" {% if 'faq' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+          <span>FAQs</span>
+        </a>
+        {% endif %}
+        {% if perms.cms.view_banner %}
+        <a href="{% url 'dashboard:banner_list' %}" {% if 'banner' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-image"></use></svg>
+          <span>Banners &amp; Sliders</span>
+        </a>
+        {% endif %}
+        {% if perms.cms.view_menuitem %}
+        <a href="{% url 'dashboard:menu_list' %}" {% if 'menu' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-menu"></use></svg>
+          <span>Navigation Menu</span>
+        </a>
+        {% endif %}
+
+        {% if perms.core.change_sitesettings or perms.cms.view_redirectrule %}
+        <p class="dash-sidebar__label">Configuration</p>
+        {% endif %}
+        {% if perms.core.change_sitesettings %}
+        <a href="{% url 'dashboard:company_info' %}" {% if request.resolver_match.url_name == 'company_info' or request.resolver_match.url_name == 'settings' %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-factory"></use></svg>
+          <span>Company Information</span>
+        </a>
+        {% endif %}
+        {% if perms.cms.view_redirectrule %}
+        <a href="{% url 'dashboard:seo_overview' %}" {% if 'seo' in request.resolver_match.url_name or 'redirect' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+          <span>SEO Management</span>
+        </a>
+        {% endif %}
+        {% if perms.core.change_sitesettings %}
+        <a href="{% url 'dashboard:social_media' %}" {% if request.resolver_match.url_name == 'social_media' %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-target"></use></svg>
+          <span>Social Media Settings</span>
+        </a>
+        <a href="{% url 'dashboard:contact_info' %}" {% if request.resolver_match.url_name == 'contact_info' %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg>
+          <span>Contact Information</span>
+        </a>
+        <a href="{% url 'dashboard:general_settings' %}" {% if request.resolver_match.url_name == 'general_settings' %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-sliders"></use></svg>
+          <span>General Settings</span>
+        </a>
+        {% endif %}
+
+        <p class="dash-sidebar__label">Operations</p>
+        {% if request.user.is_superuser %}
+        <a href="{% url 'dashboard:staff_list' %}" {% if 'staff' in request.resolver_match.url_name or 'role' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
+          <span>Staff &amp; Roles</span>
+        </a>
+        {% endif %}
+        <a href="{% url 'dashboard:notification_list' %}" {% if 'notification' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+          <span>Notifications</span>
+          {% if unread_notifications %}<span class="dash-badge">{{ unread_notifications }}</span>{% endif %}
+        </a>
+        <a href="{% url 'dashboard:reports_index' %}" {% if 'report' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-gauge"></use></svg>
+          <span>Reports &amp; Analytics</span>
+        </a>
+        {% if perms.core.view_activitylog %}
+        <a href="{% url 'dashboard:activity_list' %}" {% if 'activity' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+          <span>Activity Logs</span>
+        </a>
+        {% endif %}
+        {% if request.user.is_superuser %}
+        <a href="{% url 'dashboard:backup_index' %}" {% if 'backup' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
+          <span>Backup &amp; Maintenance</span>
+        </a>
+        {% endif %}
+        <a href="{% url 'dashboard:profile' %}" {% if request.resolver_match.url_name == 'profile' %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-users"></use></svg>
+          <span>My Profile</span>
+        </a>
+      </nav>
+
+      <div class="dash-sidebar__foot">
+        <p class="dash-sidebar__label">Public website</p>
+        <nav class="dash-nav dash-nav--muted" aria-label="Public website links">
+          <a href="{% url 'core:home' %}" target="_blank" rel="noopener">
+            <svg class="icon" aria-hidden="true"><use href="#icon-external"></use></svg>
+            <span>View website</span>
+          </a>
+          {% if request.user.is_superuser %}
+          <a href="{% url 'admin:index' %}" target="_blank" rel="noopener">
+            <svg class="icon" aria-hidden="true"><use href="#icon-cog"></use></svg>
+            <span>Django admin</span>
+          </a>
+          {% endif %}
+        </nav>
+        <div class="dash-user">
+          <span class="dash-user__avatar" aria-hidden="true">{{ request.user.username|slice:":1"|upper }}</span>
+          <span class="dash-user__meta">
+            <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+            <span>{% if request.user.is_superuser %}Superuser{% else %}Staff member{% endif %}</span>
+          </span>
+        </div>
+        <form method="post" action="{% url 'dashboard:logout' %}">
+          {% csrf_token %}
+          <button class="dash-logout" type="submit">
+            <svg class="icon" aria-hidden="true"><use href="#icon-logout"></use></svg>
+            Sign out
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <div class="dash-overlay" data-dash-overlay></div>
+
+    <div class="dash-main">
+      <header class="dash-topbar">
+        <button class="dash-menu" type="button" data-dash-open aria-controls="dash-sidebar" aria-expanded="false" aria-label="Open navigation">
+          <svg class="icon" aria-hidden="true"><use href="#icon-menu"></use></svg>
+        </button>
+        <div class="dash-topbar__title">
+          <p class="dash-topbar__eyebrow">{% block eyebrow %}Admin panel{% endblock %}</p>
+          <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+        </div>
+        <div class="dash-topbar__actions">
+          <form class="dash-topsearch" method="get" action="{% url 'dashboard:search' %}" role="search">
+            <label class="visually-hidden" for="dash-global-search">Search dashboard</label>
+            <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+            <input id="dash-global-search" type="search" name="q" value="{% if request.resolver_match.url_name == 'search' %}{{ query }}{% endif %}" placeholder="Search…" autocomplete="off">
+          </form>
+          <a class="dash-bell" href="{% url 'dashboard:notification_list' %}" aria-label="Notifications{% if unread_notifications %} ({{ unread_notifications }} unread){% endif %}">
+            <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+            {% if unread_notifications %}<span class="dash-bell__dot" aria-hidden="true">{{ unread_notifications }}</span>{% endif %}
+          </a>
+          {% block page_actions %}{% endblock %}
+        </div>
+      </header>
+
+      <main class="dash-content" id="dash-main">
+        {% include "includes/messages.html" %}
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="dash-footer">
+        <p>Sanjeev Power Controls · administration · <span class="demo-tag demo-tag--neutral">Content managed</span></p>
+        <p>Signed in as {{ request.user.username }}</p>
+      </footer>
+    </div>
+  </div>
+
+  <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}" defer></script>
+  <script src="{% static 'js/dashboard.js' %}" defer></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

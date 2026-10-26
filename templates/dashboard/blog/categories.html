@@ -1,0 +1,73 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Blog categories{% endblock %}
+{% block eyebrow %}Website content{% endblock %}
+{% block page_title %}Blog categories{% endblock %}
+
+{% block page_actions %}
+{% if perms.cms.add_blogcategory %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:blog_category_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  Add category
+</a>
+{% endif %}
+<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:blog_list' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+  Back to posts
+</a>
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ total_count }} blog categor{{ total_count|pluralize:"y,ies" }}. Categories group articles on the public blog index.</p>
+
+<section class="dash-card dash-card--flush">
+  {% if categories %}
+  <div class="table-wrap">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th scope="col">Category</th>
+          <th scope="col">Slug</th>
+          <th scope="col">Description</th>
+          <th scope="col">Posts</th>
+          <th scope="col" class="ta-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in categories %}
+        <tr>
+          <td><strong>{{ category.name }}</strong></td>
+          <td><span class="mono">{{ category.slug }}</span></td>
+          <td>{{ category.description|default:"—"|truncatechars:90 }}</td>
+          <td>{{ category.post_count }}</td>
+          <td>
+            <div class="row-actions">
+              {% if perms.cms.change_blogcategory %}
+              <a class="icon-btn" href="{% url 'dashboard:blog_category_edit' category.pk %}" title="Edit" aria-label="Edit {{ category.name }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+              </a>
+              {% endif %}
+              {% if perms.cms.delete_blogcategory %}
+              <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:blog_category_delete' category.pk %}" title="Delete" aria-label="Delete {{ category.name }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-layers"></use></svg>
+    <h3>No blog categories yet</h3>
+    <p>Create a category before writing categorised articles.</p>
+    {% if perms.cms.add_blogcategory %}
+    <a class="btn btn--primary btn--sm" href="{% url 'dashboard:blog_category_create' %}">Add category</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

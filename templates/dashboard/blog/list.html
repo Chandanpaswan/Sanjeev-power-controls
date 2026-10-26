@@ -1,0 +1,140 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Blog posts{% endblock %}
+{% block eyebrow %}Website content{% endblock %}
+{% block page_title %}Blog posts{% endblock %}
+
+{% block page_actions %}
+{% if perms.cms.add_blogpost %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:blog_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  Write post
+</a>
+{% endif %}
+{% if perms.cms.view_blogcategory %}
+<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:blog_category_list' %}">Categories</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ total_count }} post{{ total_count|pluralize }} matched · {{ published_count }} published · {{ draft_count }} draft. Draft posts and future-dated posts never appear publicly.</p>
+
+<form class="dash-filter dash-filter--wrap" method="get" action="{% url 'dashboard:blog_list' %}" role="search">
+  <div class="dash-filter__search">
+    <label class="visually-hidden" for="blog-q">Search posts</label>
+    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+    <input id="blog-q" type="search" name="q" value="{{ query }}" placeholder="Search title, excerpt or tags">
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="blog-status">Status</label>
+    <select id="blog-status" name="status">
+      <option value="">Any status</option>
+      <option value="draft" {% if status == 'draft' %}selected{% endif %}>Draft</option>
+      <option value="published" {% if status == 'published' %}selected{% endif %}>Published</option>
+    </select>
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="blog-category">Category</label>
+    <select id="blog-category" name="category">
+      <option value="">All categories</option>
+      {% for category in categories %}
+      <option value="{{ category.pk }}" {% if selected_category == category.pk|stringformat:"s" %}selected{% endif %}>{{ category.name }} ({{ category.post_count }})</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn btn--navy btn--sm" type="submit">Filter</button>
+  {% if query or status or selected_category %}<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:blog_list' %}">Reset</a>{% endif %}
+</form>
+
+<section class="dash-card dash-card--flush">
+  {% if posts %}
+  <div class="table-wrap">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th scope="col">Article</th>
+          <th scope="col">Category</th>
+          <th scope="col">Author</th>
+          <th scope="col">Status</th>
+          <th scope="col">Published</th>
+          <th scope="col" class="ta-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for post in posts %}
+        <tr>
+          <td>
+            <a href="{% url 'dashboard:blog_edit' post.pk %}">{{ post.title }}</a>
+            <span class="dash-sub">{{ post.excerpt|default:post.content|striptags|truncatechars:70 }}</span>
+          </td>
+          <td>{{ post.category.name|default:"—" }}</td>
+          <td>{{ post.author.get_full_name|default:post.author.username|default:"—" }}</td>
+          <td>
+            <div class="pill-stack">
+              <span class="status-pill status-pill--{% if post.is_public %}active{% elif post.status == 'published' %}progress{% else %}closed{% endif %}">
+                {% if post.is_public %}Live{% elif post.status == 'published' %}Scheduled{% else %}Draft{% endif %}
+              </span>
+              {% if post.noindex %}<span class="status-pill status-pill--neutral">Noindex</span>{% endif %}
+            </div>
+          </td>
+          <td>{{ post.published_at|date:"j M Y, H:i"|default:"—" }}</td>
+          <td>
+            <div class="row-actions">
+              {% if post.is_public %}
+              <a class="icon-btn" href="{{ post.get_absolute_url }}" target="_blank" rel="noopener" title="View public post" aria-label="View {{ post.title }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-eye"></use></svg>
+              </a>
+              {% endif %}
+              {% if perms.cms.change_blogpost %}
+              <a class="icon-btn" href="{% url 'dashboard:blog_edit' post.pk %}" title="Edit" aria-label="Edit {{ post.title }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+              </a>
+              <form method="post" action="{% url 'dashboard:blog_toggle_status' post.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="icon-btn" type="submit" title="{% if post.status == 'published' %}Unpublish{% else %}Publish{% endif %}" aria-label="{% if post.status == 'published' %}Unpublish{% else %}Publish{% endif %} {{ post.title }}">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{% if post.status == 'published' %}lock{% else %}check{% endif %}"></use></svg>
+                </button>
+              </form>
+              {% endif %}
+              {% if perms.cms.delete_blogpost %}
+              <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:blog_delete' post.pk %}" title="Delete" aria-label="Delete {{ post.title }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="dash-pagination" aria-label="Blog pagination">
+    <span class="dash-pagination__status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <div class="dash-pagination__links">
+      {% if page_obj.has_previous %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+    <h3>{% if query or status or selected_category %}No posts match these filters{% else %}No blog posts yet{% endif %}</h3>
+    <p>{% if query or status or selected_category %}Try a different search term or clear the filters.{% else %}Write the first article for the public blog.{% endif %}</p>
+    {% if query or status or selected_category %}
+    <a class="btn btn--outline btn--sm" href="{% url 'dashboard:blog_list' %}">Clear filters</a>
+    {% elif perms.cms.add_blogpost %}
+    <a class="btn btn--primary btn--sm" href="{% url 'dashboard:blog_create' %}">Write post</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

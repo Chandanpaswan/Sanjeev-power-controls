@@ -1,0 +1,141 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}My profile{% endblock %}
+{% block eyebrow %}Account{% endblock %}
+{% block page_title %}My profile{% endblock %}
+
+{% block content %}
+<div class="dash-columns dash-columns--detail">
+  <div class="dash-columns__main">
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Profile details</h2>
+          <p>Your name and contact email. The username is managed by a superuser.</p>
+        </div>
+      </header>
+
+      <form method="post" class="dash-form" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="form" value="profile">
+        {% if profile_form.non_field_errors %}
+        <div class="form-status is-visible" role="alert">
+          {% for error in profile_form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+        </div>
+        {% endif %}
+        <div class="field-grid">
+          <div class="field">
+            <label>Username</label>
+            <input class="form-control" type="text" value="{{ request.user.username }}" disabled>
+            <span class="hint">Usernames are not editable from this screen.</span>
+          </div>
+          {% include "dashboard/includes/field.html" with field=profile_form.email %}
+          {% include "dashboard/includes/field.html" with field=profile_form.first_name %}
+          {% include "dashboard/includes/field.html" with field=profile_form.last_name %}
+        </div>
+        <div class="dash-form__actions">
+          <button class="btn btn--primary" type="submit">Save profile</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Change password</h2>
+          <p>Use a unique password. You will stay signed in after changing it.</p>
+        </div>
+      </header>
+
+      <form method="post" class="dash-form" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="form" value="password">
+        {% if password_form.non_field_errors %}
+        <div class="form-status is-visible" role="alert">
+          {% for error in password_form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+        </div>
+        {% endif %}
+        <div class="field-grid">
+          {% for field in password_form %}
+            {% include "dashboard/includes/field.html" with field=field %}
+          {% endfor %}
+        </div>
+        <div class="dash-form__actions">
+          <button class="btn btn--navy" type="submit">Update password</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <aside class="dash-columns__side">
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Account</h2>
+          <p>Access and session information.</p>
+        </div>
+      </header>
+      <ul class="detail-list detail-list--compact">
+        <li class="detail-row">
+          <dt>Name</dt>
+          <dd>{{ request.user.get_full_name|default:request.user.username }}</dd>
+        </li>
+        <li class="detail-row">
+          <dt>Email</dt>
+          <dd>{{ request.user.email|default:"Not set" }}</dd>
+        </li>
+        <li class="detail-row">
+          <dt>Role</dt>
+          <dd>{% if is_superuser %}<span class="status-pill status-pill--featured">Superuser</span>{% else %}<span class="status-pill status-pill--neutral">Staff</span>{% endif %}</dd>
+        </li>
+        <li class="detail-row">
+          <dt>Groups</dt>
+          <dd>
+            {% for group in groups %}
+            <span class="status-pill status-pill--neutral">{{ group.name }}</span>
+            {% empty %}
+            <span class="dash-sub">No groups assigned</span>
+            {% endfor %}
+          </dd>
+        </li>
+        <li class="detail-row">
+          <dt>Last sign-in</dt>
+          <dd>{{ request.user.last_login|date:"j M Y, H:i"|default:"—" }}</dd>
+        </li>
+        <li class="detail-row">
+          <dt>Joined</dt>
+          <dd>{{ request.user.date_joined|date:"j M Y" }}</dd>
+        </li>
+      </ul>
+    </section>
+
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Recent account activity</h2>
+          <p>Your latest audited actions.</p>
+        </div>
+      </header>
+      {% if activity %}
+      <ul class="activity-list">
+        {% for log in activity %}
+        <li>
+          <span class="activity-icon activity-icon--{{ log.action }}">
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{% if log.action == 'login' or log.action == 'logout' %}lock{% elif log.action == 'delete' %}trash{% elif log.action == 'create' %}plus{% else %}pencil{% endif %}"></use></svg>
+          </span>
+          <span class="activity-body">
+            <strong>{{ log.description }}</strong>
+            <span class="dash-sub">{{ log.get_action_display }} · {{ log.created_at|date:"j M Y, H:i" }}</span>
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="dash-empty dash-empty--sm">
+        <p>No account activity recorded yet.</p>
+      </div>
+      {% endif %}
+    </section>
+  </aside>
+</div>
+{% endblock %}

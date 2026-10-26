@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if cms_page.seo_title %}{{ cms_page.seo_title }}{% else %}{{ site_profile.default_seo_title|default:"Sanjeev Power Controls — Reliable DG Set Parts" }}{% endif %}{% endblock %}
+{% block description %}{{ cms_page.seo_description|default:site_profile.default_seo_description|default:"Sanjeev Power Controls presents DG set air, oil and fuel filters, alternator components and engine spare parts for enquiry-led supply. Demo catalogue with clearly labelled sample data." }}{% endblock %}
+{% block robots %}{% if cms_page.noindex or not site_profile.allow_search_indexing %}noindex,nofollow{% else %}index,follow{% endif %}{% endblock %}
+{% block canonical %}{{ cms_page.canonical_url|default:request.build_absolute_uri }}{% endblock %}
+{% block og_title %}{{ cms_page.seo_title|default:site_profile.default_seo_title|default:"Sanjeev Power Controls — Reliable DG Set Parts" }}{% endblock %}
+{% block og_description %}{{ cms_page.seo_description|default:site_profile.default_seo_description|default:"DG set filtration, engine and electrical parts presented for enquiry-led supply." }}{% endblock %}
+
+{% block structured_data %}
+{% if faqs %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for faq in faqs %}{
+      "@type": "Question",
+      "name": "{{ faq.question|escapejs }}",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ faq.answer|striptags|escapejs }}"
+      }
+    }{% if not forloop.last %},{% endif %}{% endfor %}
+  ]
+}
+</script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-copy" data-reveal>
+      <p class="eyebrow eyebrow--light">{{ cms_page.hero_eyebrow|default:"DG set parts manufacturer" }}</p>
+      <h1>{{ cms_page.hero_heading|default:site_profile.hero_heading|default:"Reliable DG Set Parts. Built for Performance." }}</h1>
+      <p class="hero-lead">{{ cms_page.hero_description|default:site_profile.hero_description|default:"Explore demonstration listings for filtration, engine and electrical components used in diesel generator sets. Share your part number and application, and the team can confirm the requirement before quoting." }}</p>
+      <div class="hero-actions">
+        {% if cms_page.cta_url %}
+        <a class="btn btn--primary" href="{{ cms_page.cta_url }}"{% if cms_page.cta_url|slice:":4" == "http" %} target="_blank" rel="noopener"{% endif %}>
+          {{ cms_page.cta_label|default:"Explore Products" }}
+          <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+        </a>
+        {% else %}
+        <a class="btn btn--primary" href="{% url 'products:list' %}">
+          Explore Products
+          <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+        </a>
+        {% endif %}
+        <a class="btn btn--ghost-light" href="{% url 'core:contact' %}">Request an Enquiry</a>
+      </div>
+      <ul class="hero-points">
+        <li><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>Filtration, engine &amp; electrical</li>
+        <li><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>Enquiry-led supply</li>
+        <li><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>Specification-first quoting</li>
+      </ul>
+    </div>
+
+    <figure class="hero-figure" data-reveal data-reveal-delay="1">
+      <div class="hero-figure__frame">
+        {% if cms_page.display_image_url %}
+        <img src="{{ cms_page.display_image_url }}" alt="{{ cms_page.display_alt }}" width="1920" height="1080" fetchpriority="high" decoding="async">
+        {% else %}
+        <picture>
+          <source srcset="{% static 'images/industrial/hero-generator.webp' %}" type="image/webp">
+          <img src="{% static 'images/industrial/hero-generator.jpg' %}" alt="Industrial diesel generator set in an equipment room" width="1920" height="1080" fetchpriority="high" decoding="async">
+        </picture>
+        {% endif %}
+      </div>
+      <div class="hero-chip">
+        <svg class="icon" aria-hidden="true"><use href="#icon-wrench"></use></svg>
+        <span>
+          <strong>Share your part number</strong>
+          <span>Enquiry-led confirmation</span>
+        </span>
+      </div>
+      <figcaption class="hero-figure__caption">
+        {% if cms_page.display_image_url %}
+        <span><strong>{{ cms_page.display_alt }}</strong>Managed page image</span>
+        {% else %}
+        <span><strong>Representative industrial image</strong>Photo: Biswarup Ganguly · CC BY 3.0</span>
+        {% endif %}
+        <span class="demo-tag">Demo site</span>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+{% include "includes/banner_slider.html" %}
+{% include "includes/cms_content.html" %}
+
+<section class="section section--light">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">Product families</p>
+        <h2>Parts grouped around the way a DG set is maintained.</h2>
+        <p class="lead">Five sample listings demonstrate how the catalogue, filtering and enquiry flow work. All products are clearly marked as demonstration content.</p>
+      </div>
+      <div class="section-head__aside" data-reveal>
+        <a class="btn btn--outline" href="{% url 'products:list' %}">
+          View full catalogue
+          <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="cat-grid">
+      {% for card in category_cards %}
+      <a class="card cat-card" href="{% url 'products:list' %}?category={{ card.category.slug }}" data-reveal>
+        <span class="cat-card__pic-note">Demo</span>
+        <div class="cat-card__media">
+          {% if card.sample.image %}
+          <img src="{{ card.sample.image.url }}" alt="Illustrative {{ card.category.name }} component" width="1000" height="750" loading="lazy" decoding="async">
+          {% else %}
+          <svg class="icon" aria-hidden="true"><use href="#icon-box"></use></svg>
+          {% endif %}
+        </div>
+        <div class="cat-card__body">
+          <p class="cat-card__meta">{{ card.category.active_count }} demo listing{{ card.category.active_count|pluralize }}</p>
+          <h3>{{ card.category.name }}</h3>
+          <span class="cat-card__link">
+            Browse category
+            <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+          </span>
+        </div>
+      </a>
+      {% empty %}
+      <div class="empty-state is-visible">
+        <h3>Catalogue coming soon</h3>
+        <p>Sample products will appear here after the demo data is loaded.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container split">
+    <div class="split__body" data-reveal>
+      <p class="eyebrow">Company introduction</p>
+      <h2>A focused parts catalogue, presented for verification.</h2>
+      <p>This build demonstrates how Sanjeev Power Controls can present DG set parts online: clear categories, structured product records and a direct enquiry path. The final website will use confirmed part data supplied by the business.</p>
+      <ul class="check-list">
+        <li>Filtration, engine and electrical product families</li>
+        <li>Product records managed from a secure dashboard</li>
+        <li>Enquiries stored in the site database for follow-up</li>
+        <li>Unverified specifications clearly marked as demo content</li>
+      </ul>
+      <a class="btn btn--navy" href="{% url 'core:about' %}">
+        About the company
+        <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+      </a>
+    </div>
+    <div class="split__media" data-reveal data-reveal-delay="1">
+      <figure class="split__figure">
+        <picture>
+          <source srcset="{% static 'images/industrial/about-generator.webp' %}" type="image/webp">
+          <img src="{% static 'images/industrial/about-generator.jpg' %}" alt="Diesel generator set installed in a plant room" width="1400" height="1050" loading="lazy" decoding="async">
+        </picture>
+      </figure>
+      <div class="split__badge">
+        <strong>Demo positioning, not verified history</strong>
+        <span>Founding year, facility details and certifications must be supplied by the client.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--light">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">Sample catalogue</p>
+        <h2>Featured parts for the enquiry process.</h2>
+        <p class="lead">Each card links to a full product record with specifications, an illustrative image and a pre-filled enquiry form.</p>
+      </div>
+      <div class="section-head__aside" data-reveal>
+        <a class="link-arrow" href="{% url 'products:list' %}">
+          All products
+          <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="product-grid">
+      {% for product in featured_products %}
+        {% include "includes/product_card.html" with product=product %}
+      {% empty %}
+      <div class="empty-state is-visible">
+        <svg class="icon" aria-hidden="true"><use href="#icon-box"></use></svg>
+        <h3>No products published yet</h3>
+        <p>Load the demo catalogue with <code>python manage.py seed_demo</code>.</p>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="section-footnote">Illustrative product renders — not photographs of supplied parts. Specifications require verification.</p>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">Why choose us</p>
+        <h2>A straightforward route from requirement to quotation.</h2>
+        <p class="lead">Proposed positioning for client review. No certifications, production capacity or customer relationships are claimed.</p>
+      </div>
+    </div>
+    <div class="value-grid">
+      <article class="value-card" data-reveal>
+        <span class="value-card__num">01</span>
+        <div class="value-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-send"></use></svg></div>
+        <h3>Enquiry-led supply</h3>
+        <p>Every conversation starts with the actual requirement rather than an assumed fitment or catalogue match.</p>
+      </article>
+      <article class="value-card" data-reveal data-reveal-delay="1">
+        <span class="value-card__num">02</span>
+        <div class="value-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg></div>
+        <h3>Specification first</h3>
+        <p>Part numbers, dimensions and application details are confirmed with the customer before a quotation is issued.</p>
+      </article>
+      <article class="value-card" data-reveal data-reveal-delay="2">
+        <span class="value-card__num">03</span>
+        <div class="value-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-layers"></use></svg></div>
+        <h3>Component focus</h3>
+        <p>The demo catalogue concentrates on filtration, engine spares and electrical components for generator sets.</p>
+      </article>
+      <article class="value-card" data-reveal data-reveal-delay="3">
+        <span class="value-card__num">04</span>
+        <div class="value-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-inbox"></use></svg></div>
+        <h3>Tracked enquiries</h3>
+        <p>Website enquiries are recorded with a reference number and tracked by staff from New to Closed.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="highlight-band">
+  <div class="container highlight-grid">
+    <div data-reveal>
+      <p class="eyebrow eyebrow--light">Quality approach</p>
+      <h2>Verification begins with the specification.</h2>
+      <p>The quality page sets out a proposed inspection workflow for the business to confirm. It deliberately does not claim certifications or approvals that have not been supplied.</p>
+      <ol class="highlight-list">
+        <li>
+          <span class="highlight-list__num">01</span>
+          <div>
+            <h3>Requirement capture</h3>
+            <p>Part number, engine model, dimensions and quantity are recorded with the enquiry.</p>
+          </div>
+        </li>
+        <li>
+          <span class="highlight-list__num">02</span>
+          <div>
+            <h3>Component verification</h3>
+            <p>Visual and dimensional checks against the agreed reference before dispatch.</p>
+          </div>
+        </li>
+        <li>
+          <span class="highlight-list__num">03</span>
+          <div>
+            <h3>Packing review</h3>
+            <p>Label, quantity and packing condition confirmed against the order record.</p>
+          </div>
+        </li>
+      </ol>
+      <a class="btn btn--light" href="{% url 'core:quality' %}">
+        Quality &amp; Applications
+        <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+      </a>
+    </div>
+    <figure class="highlight-figure" data-reveal data-reveal-delay="1">
+      <picture>
+        <source srcset="{% static 'images/industrial/quality-cnc.webp' %}" type="image/webp">
+        <img src="{% static 'images/industrial/quality-cnc.jpg' %}" alt="CNC laser cutting machine in operation" width="1200" height="800" loading="lazy" decoding="async">
+      </picture>
+      <figcaption>Representative image · S zillayali · CC BY 3.0</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">Applications</p>
+        <h2>Where DG set parts are typically required.</h2>
+        <p class="lead">Typical application areas for discussion — not verified customer installations or approvals.</p>
+      </div>
+    </div>
+    <div class="industry-grid">
+      <article class="industry-card" data-reveal>
+        <div class="industry-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-bolt"></use></svg></div>
+        <div><h3>Standby power</h3><p>Service parts for generator sets held in reserve for outages.</p></div>
+      </article>
+      <article class="industry-card" data-reveal>
+        <div class="industry-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-factory"></use></svg></div>
+        <div><h3>Manufacturing plants</h3><p>Routine maintenance of engine and filtration components.</p></div>
+      </article>
+      <article class="industry-card" data-reveal>
+        <div class="industry-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg></div>
+        <div><h3>Rental fleets</h3><p>Repeatable parts references for mixed generator fleets.</p></div>
+      </article>
+      <article class="industry-card" data-reveal>
+        <div class="industry-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-gauge"></use></svg></div>
+        <div><h3>Telecom sites</h3><p>Filtration and engine service items for remote sites.</p></div>
+      </article>
+      <article class="industry-card" data-reveal>
+        <div class="industry-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-droplet"></use></svg></div>
+        <div><h3>Agricultural pumping</h3><p>Fuel and lubrication components for diesel pump sets.</p></div>
+      </article>
+      <article class="industry-card" data-reveal>
+        <div class="industry-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-layers"></use></svg></div>
+        <div><h3>Commercial buildings</h3><p>Backup generator maintenance for offices and facilities.</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+{% include "includes/testimonials.html" %}
+{% include "includes/faqs.html" %}
+
+{% if recent_posts %}
+<section class="section section--light">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">Insights</p>
+        <h2>Notes for better parts decisions.</h2>
+        <p class="lead">Published guides on filtration, maintenance planning and preparing a clear enquiry.</p>
+      </div>
+      <div class="section-head__aside" data-reveal>
+        <a class="link-arrow" href="{% url 'blog:list' %}">
+          All articles
+          <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+        </a>
+      </div>
+    </div>
+    <div class="blog-grid blog-grid--three">
+      {% for post in recent_posts %}
+      <article class="blog-card">
+        <a class="blog-card__media" href="{{ post.get_absolute_url }}" tabindex="-1" aria-hidden="true">
+          {% if post.display_image_url %}
+          <img src="{{ post.display_image_url }}" alt="{{ post.display_alt }}" width="640" height="400" loading="lazy" decoding="async">
+          {% else %}
+          <span class="blog-card__blank"><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg></span>
+          {% endif %}
+        </a>
+        <div class="blog-card__body">
+          <div class="blog-card__meta">
+            {% if post.category %}<span class="blog-tag">{{ post.category.name }}</span>{% endif %}
+            <time datetime="{{ post.published_at|date:'Y-m-d' }}">{{ post.published_at|date:"j M Y" }}</time>
+          </div>
+          <h2><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
+          <p>{{ post.excerpt|default:post.content|striptags|truncatechars:120 }}</p>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section cta-section">
+  <div class="container">
+    <div class="cta-banner" data-reveal>
+      <div>
+        <p class="eyebrow eyebrow--light">Start with the requirement</p>
+        <h2>Need a part number confirmed?</h2>
+        <p>Send the product, engine model and quantity. The enquiry is stored securely in this demo dashboard with a reference number for follow-up.</p>
+      </div>
+      <div class="cta-banner__actions">
+        <a class="btn btn--light" href="{% url 'core:contact' %}">
+          Request Enquiry
+          <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+        </a>
+        <a class="btn btn--ghost-light" href="{% url 'products:list' %}">Browse Products</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

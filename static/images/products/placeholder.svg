@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="placeholderTitle">
+  <title id="placeholderTitle">Product image placeholder</title>
+  <rect width="800" height="600" fill="#EEF3F8"/>
+  <g fill="none" stroke="#CBD5E1" stroke-width="6">
+    <rect x="250" y="190" width="300" height="220" rx="18"/>
+    <path d="m268 380 78-88 62 66 44-46 80 84"/>
+    <circle cx="330" cy="250" r="22"/>
+  </g>
+  <text x="400" y="468" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#64748B">Product image to be added</text>
+</svg>

@@ -1,0 +1,134 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Enquiries{% endblock %}
+{% block eyebrow %}Customer enquiries{% endblock %}
+{% block page_title %}Enquiries{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ total_count }} enquir{{ total_count|pluralize:"y,ies" }} match the current filters. This information is private and visible only to staff.</p>
+
+{% if status_summary %}
+<div class="status-summary" aria-label="Enquiries by status">
+  <a class="status-summary__item{% if not status %} is-active{% endif %}" href="{% url 'dashboard:enquiry_list' %}">
+    <span>All</span>
+    <strong>{{ all_enquiry_count }}</strong>
+  </a>
+  {% for row in status_summary %}
+  <a class="status-summary__item{% if status == row.value %} is-active{% endif %}" href="{% url 'dashboard:enquiry_list' %}?status={{ row.value }}">
+    <span>{{ row.label }}</span>
+    <strong>{{ row.count }}</strong>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<form class="dash-filter dash-filter--wrap" method="get" action="{% url 'dashboard:enquiry_list' %}" role="search">
+  <div class="dash-filter__search">
+    <label class="visually-hidden" for="enquiry-q">Search enquiries</label>
+    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+    <input id="enquiry-q" type="search" name="q" value="{{ query }}" placeholder="Reference, name, company, email or phone">
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="enquiry-status">Status</label>
+    <select id="enquiry-status" name="status">
+      <option value="">Any status</option>
+      {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="dash-filter__field dash-filter__field--date">
+    <label for="enquiry-from">From</label>
+    <input id="enquiry-from" type="date" name="date_from" value="{{ date_from }}">
+  </div>
+  <div class="dash-filter__field dash-filter__field--date">
+    <label for="enquiry-to">To</label>
+    <input id="enquiry-to" type="date" name="date_to" value="{{ date_to }}">
+  </div>
+  <button class="btn btn--navy btn--sm" type="submit">Filter</button>
+  {% if query or status or date_from or date_to %}
+  <a class="btn btn--ghost btn--sm" href="{% url 'dashboard:enquiry_list' %}">Reset</a>
+  {% endif %}
+</form>
+
+<section class="dash-card dash-card--flush">
+  {% if enquiries %}
+  <div class="table-wrap">
+    <table class="dash-table dash-table--enquiries">
+      <thead>
+        <tr>
+          <th scope="col">Reference</th>
+          <th scope="col">Customer</th>
+          <th scope="col">Product interest</th>
+          <th scope="col">Status</th>
+          <th scope="col">Received</th>
+          <th scope="col" class="ta-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for enquiry in enquiries %}
+        <tr{% if enquiry.status == 'new' %} class="is-new"{% endif %}>
+          <td>
+            <a class="mono" href="{% url 'dashboard:enquiry_detail' enquiry.pk %}">{{ enquiry.reference }}</a>
+          </td>
+          <td>
+            <a href="{% url 'dashboard:enquiry_detail' enquiry.pk %}">{{ enquiry.name }}</a>
+            <span class="dash-sub">
+              {% if enquiry.company %}{{ enquiry.company }} · {% endif %}{{ enquiry.email }}
+            </span>
+            <span class="dash-sub">{{ enquiry.phone }}</span>
+          </td>
+          <td>{{ enquiry.product_label }}</td>
+          <td><span class="status-pill status-pill--{{ enquiry.status_css }}">{{ enquiry.get_status_display }}</span></td>
+          <td>
+            <span title="{{ enquiry.created_at }}">{{ enquiry.created_at|date:"j M Y" }}</span>
+            <span class="dash-sub">{{ enquiry.created_at|date:"H:i" }}</span>
+          </td>
+          <td>
+            <div class="row-actions">
+              <a class="icon-btn" href="{% url 'dashboard:enquiry_detail' enquiry.pk %}" title="Open" aria-label="Open enquiry {{ enquiry.reference }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-eye"></use></svg>
+              </a>
+              <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:enquiry_delete' enquiry.pk %}" title="Delete" aria-label="Delete enquiry {{ enquiry.reference }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="dash-pagination" aria-label="Enquiry pagination">
+    <span class="dash-pagination__status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <div class="dash-pagination__links">
+      {% if page_obj.has_previous %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-chevron-left"></use></svg>Previous
+      </a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}">
+        Next<svg class="icon icon--sm" aria-hidden="true"><use href="#icon-chevron-right"></use></svg>
+      </a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-inbox"></use></svg>
+    <h3>{% if query or status or date_from or date_to %}No enquiries match these filters{% else %}No enquiries yet{% endif %}</h3>
+    <p>{% if query or status or date_from or date_to %}Try a different search term, status or date range.{% else %}Submissions from the public contact form will appear here.{% endif %}</p>
+    {% if query or status or date_from or date_to %}
+    <a class="btn btn--outline btn--sm" href="{% url 'dashboard:enquiry_list' %}">Clear filters</a>
+    {% else %}
+    <a class="btn btn--outline btn--sm" href="{% url 'core:contact' %}" target="_blank" rel="noopener">Open enquiry form</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

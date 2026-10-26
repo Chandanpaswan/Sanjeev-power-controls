@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{% if cms_page.seo_title %}{{ cms_page.seo_title }}{% else %}Terms of Use &mdash; {{ site_profile.company_name|default:"Sanjeev Power Controls" }}{% endif %}{% endblock %}
+{% block description %}{{ cms_page.seo_description|default:"Terms for using the Sanjeev Power Controls demonstration website and catalogue. Demo content is not a commercial offer." }}{% endblock %}
+{% block robots %}{% if cms_page.noindex or not site_profile.allow_search_indexing %}noindex,nofollow{% else %}index,follow{% endif %}{% endblock %}
+{% block canonical %}{{ cms_page.canonical_url|default:request.build_absolute_uri }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'core:home' %}">Home</a></li>
+      <li aria-current="page">Terms of Use</li>
+    </ol>
+    <p class="eyebrow eyebrow--light">{{ cms_page.hero_eyebrow|default:"Legal" }}</p>
+    <h1>{{ cms_page.hero_heading|default:"Terms of Use" }}</h1>
+    <p class="page-hero__lead">{{ cms_page.hero_description|default:"Sample terms for this demonstration build. They must be replaced with reviewed terms before the website is published." }}</p>
+  </div>
+</section>
+
+{% if cms_page.body or cms_page.public_sections %}
+{% include "includes/cms_content.html" %}
+{% else %}
+<section class="section section--white">
+  <div class="container narrow prose">
+    <div class="notice notice--warn">
+      <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+      <p><strong>Demo notice:</strong> nothing on this website is a commercial offer, quotation, warranty or claim of capability.</p>
+    </div>
+
+    <h2>Demonstration content</h2>
+    <p>Product names, SKUs, descriptions, specifications and imagery are illustrative sample content. They must not be relied on for purchasing, fitment or compatibility decisions. Confirm every detail with the business before ordering.</p>
+
+    <h2>Enquiries</h2>
+    <p>Submitting the enquiry form records a request for contact. It does not create an order, contract or obligation to supply. Prices, availability and lead times are not stated on this website.</p>
+
+    <h2>Intellectual property</h2>
+    <p>The company name, logo and brand assets belong to Sanjeev Power Controls. Photographs used on this demonstration site are credited on the <a href="{% url 'core:credits' %}">image credits</a> page and remain the property of their respective authors.</p>
+
+    <h2>Acceptable use</h2>
+    <p>Do not attempt to access the admin panel without authorisation, submit automated spam through the enquiry form, or use the website in a way that interferes with its operation.</p>
+
+    <h2>Limitation of liability</h2>
+    <p>This demonstration website is provided as-is. The business is not liable for decisions made on the basis of unverified demonstration content.</p>
+
+    <h2>Governing law</h2>
+    <p>The applicable jurisdiction must be confirmed by the business. No jurisdiction is asserted in this demo build.</p>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Products{% endblock %}
+{% block eyebrow %}Catalogue{% endblock %}
+{% block page_title %}Products{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:product_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  Add product
+</a>
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ total_count }} product record{{ total_count|pluralize }} in the database. Inactive products are hidden from the public catalogue.</p>
+
+<form class="dash-filter" method="get" action="{% url 'dashboard:product_list' %}" role="search">
+  <div class="dash-filter__search">
+    <label class="visually-hidden" for="product-q">Search products</label>
+    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+    <input id="product-q" type="search" name="q" value="{{ query }}" placeholder="Search name, SKU or description">
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="product-category">Category</label>
+    <select id="product-category" name="category">
+      <option value="">All categories</option>
+      {% for category in categories %}
+      <option value="{{ category.pk }}" {% if selected_category == category.pk|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="product-status">Status</label>
+    <select id="product-status" name="status">
+      <option value="">Any status</option>
+      <option value="active" {% if status == 'active' %}selected{% endif %}>Active only</option>
+      <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive only</option>
+      <option value="featured" {% if status == 'featured' %}selected{% endif %}>Featured only</option>
+    </select>
+  </div>
+  <button class="btn btn--navy btn--sm" type="submit">Filter</button>
+  {% if query or selected_category or status %}
+  <a class="btn btn--ghost btn--sm" href="{% url 'dashboard:product_list' %}">Reset</a>
+  {% endif %}
+</form>
+
+<section class="dash-card dash-card--flush">
+  {% if products %}
+  <div class="table-wrap">
+    <table class="dash-table dash-table--products">
+      <thead>
+        <tr>
+          <th scope="col">Product</th>
+          <th scope="col">Category</th>
+          <th scope="col">SKU</th>
+          <th scope="col">Visibility</th>
+          <th scope="col">Updated</th>
+          <th scope="col" class="ta-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+        <tr>
+          <td>
+            <div class="table-product">
+              <div class="table-product__media">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" alt="" width="60" height="45" loading="lazy">
+                {% else %}
+                <span class="table-product__blank" aria-hidden="true"><svg class="icon icon--sm"><use href="#icon-image"></use></svg></span>
+                {% endif %}
+              </div>
+              <div class="table-product__body">
+                <a href="{% url 'dashboard:product_edit' product.pk %}">{{ product.name }}</a>
+                <span class="dash-sub">{{ product.short_description|truncatechars:60 }}</span>
+              </div>
+            </div>
+          </td>
+          <td>{{ product.category.name }}</td>
+          <td><span class="mono">{{ product.sku }}</span></td>
+          <td>
+            <div class="pill-stack">
+              <span class="status-pill status-pill--{% if product.active %}active{% else %}closed{% endif %}">
+                {% if product.active %}Active{% else %}Inactive{% endif %}
+              </span>
+              {% if product.featured %}<span class="status-pill status-pill--featured">Featured</span>{% endif %}
+            </div>
+          </td>
+          <td><span title="{{ product.updated_at }}">{{ product.updated_at|date:"j M Y" }}</span></td>
+          <td>
+            <div class="row-actions">
+              <a class="icon-btn" href="{{ product.get_absolute_url }}" target="_blank" rel="noopener" title="View public page" aria-label="View {{ product.name }} on the public site">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-eye"></use></svg>
+              </a>
+              <a class="icon-btn" href="{% url 'dashboard:product_edit' product.pk %}" title="Edit" aria-label="Edit {{ product.name }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+              </a>
+              <form method="post" action="{% url 'dashboard:product_toggle_active' product.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="icon-btn" type="submit" title="{% if product.active %}Deactivate{% else %}Activate{% endif %}" aria-label="{% if product.active %}Deactivate{% else %}Activate{% endif %} {{ product.name }}">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{% if product.active %}eye{% else %}eye{% endif %}"></use></svg>
+                </button>
+              </form>
+              <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:product_delete' product.pk %}" title="Delete" aria-label="Delete {{ product.name }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="dash-pagination" aria-label="Product pagination">
+    <span class="dash-pagination__status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <div class="dash-pagination__links">
+      {% if page_obj.has_previous %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-chevron-left"></use></svg>Previous
+      </a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}">
+        Next<svg class="icon icon--sm" aria-hidden="true"><use href="#icon-chevron-right"></use></svg>
+      </a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-box"></use></svg>
+    <h3>{% if query or selected_category or status %}No products match these filters{% else %}No products yet{% endif %}</h3>
+    <p>{% if query or selected_category or status %}Try a different search term or clear the filters.{% else %}Load the demo catalogue or create the first product.{% endif %}</p>
+    {% if query or selected_category or status %}
+    <a class="btn btn--outline btn--sm" href="{% url 'dashboard:product_list' %}">Clear filters</a>
+    {% else %}
+    <a class="btn btn--primary btn--sm" href="{% url 'dashboard:product_create' %}">Add product</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

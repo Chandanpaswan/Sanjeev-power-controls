@@ -1,0 +1,24 @@
+{% if faqs %}
+<section class="section section--white">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">Questions</p>
+        <h2>Frequently asked questions.</h2>
+        <p class="lead">Published answers from the site team. For a specific part, send an enquiry with the engine details.</p>
+      </div>
+    </div>
+    <div class="faq-list">
+      {% for faq in faqs %}
+      <details class="faq-item" data-reveal>
+        <summary>
+          <span>{{ faq.question }}</span>
+          <svg class="icon" aria-hidden="true"><use href="#icon-chevron-down"></use></svg>
+        </summary>
+        <div class="rich-text faq-item__answer">{{ faq.answer_html|safe }}</div>
+      </details>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}

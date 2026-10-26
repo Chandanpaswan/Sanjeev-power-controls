@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ site_profile.default_seo_title|default:"Sanjeev Power Controls" }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ site_profile.default_seo_description|default:"Sanjeev Power Controls — DG set filtration, engine and electrical parts presented for enquiry-led supply." }}{% endblock %}">
+  <meta name="robots" content="{% block robots %}{% if site_profile.allow_search_indexing %}index,follow{% else %}noindex,nofollow{% endif %}{% endblock %}">
+  <meta name="theme-color" content="#0B1F3A">
+  <link rel="canonical" href="{% block canonical %}{{ request.build_absolute_uri }}{% endblock %}">
+
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:site_name" content="{{ site_profile.company_name|default:'Sanjeev Power Controls' }}">
+  <meta property="og:title" content="{% block og_title %}{{ site_profile.default_seo_title|default:"Sanjeev Power Controls" }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ site_profile.default_seo_description|default:"DG set filtration, engine and electrical parts for enquiry-led supply." }}{% endblock %}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  <meta property="og:image" content="{% block og_image %}{% if site_profile.default_og_image %}{{ request.scheme }}://{{ request.get_host }}{{ site_profile.default_og_image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/branding/spc-og-image.png' %}{% endif %}{% endblock %}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{% block twitter_title %}{{ site_profile.default_seo_title|default:"Sanjeev Power Controls" }}{% endblock %}">
+  <meta name="twitter:description" content="{% block twitter_description %}{{ site_profile.default_seo_description|default:"DG set filtration, engine and electrical parts for enquiry-led supply." }}{% endblock %}">
+  <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% if site_profile.default_og_image %}{{ site_profile.default_og_image.url }}{% else %}{% static 'images/branding/spc-og-image.png' %}{% endif %}">
+
+  <link rel="icon" href="{% if site_profile.display_favicon_url %}{{ site_profile.display_favicon_url }}{% else %}{% static 'images/branding/favicon.svg' %}{% endif %}" type="image/svg+xml">
+  <link rel="icon" href="{% static 'images/branding/favicon-32.png' %}" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="{% static 'images/branding/apple-touch-icon.png' %}">
+
+  <link rel="preload" href="{% static 'fonts/inter-400.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/montserrat-700.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  <link rel="stylesheet" href="{% static 'css/pages.css' %}">
+  <script>document.documentElement.classList.add('js');</script>
+  {% if site_profile %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "{{ site_profile.company_name|escapejs }}",
+    "url": "{{ request.scheme }}://{{ request.get_host }}",
+    "slogan": "{{ site_profile.tagline|escapejs }}",{% if site_profile.contact_email %}
+    "email": "{{ site_profile.contact_email|escapejs }}",{% endif %}{% if site_profile.has_phone %}
+    "telephone": "{{ site_profile.contact_phone|escapejs }}",{% endif %}{% if site_profile.address_lines %}
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "{{ site_profile.business_address|escapejs }}"
+    },{% endif %}{% if site_profile.social_links %}
+    "sameAs": [{% for name, url in site_profile.social_links %}"{{ url|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}],{% endif %}
+    "logo": "{{ request.scheme }}://{{ request.get_host }}{% if site_profile.display_logo_url %}{{ site_profile.display_logo_url }}{% else %}{% static 'images/branding/spc-logo.png' %}{% endif %}"
+  }
+  </script>
+  {% endif %}
+  {% block structured_data %}{% endblock %}
+  {% block extra_head %}{% endblock %}
+  {% if site_profile.google_analytics_id %}
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ site_profile.google_analytics_id|urlencode }}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '{{ site_profile.google_analytics_id|escapejs }}');
+  </script>
+  {% endif %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  {% include "includes/sprite.html" %}
+  {% include "includes/demo_bar.html" %}
+  {% include "includes/header.html" %}
+
+  <main id="main-content">
+    {% include "includes/messages.html" %}
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "includes/footer.html" %}
+
+  <button class="to-top" type="button" aria-label="Back to top">
+    <svg class="icon" aria-hidden="true"><use href="#icon-arrow-up"></use></svg>
+  </button>
+
+  <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}" defer></script>
+  <script src="{% static 'js/site.js' %}" defer></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

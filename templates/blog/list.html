@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Insights &amp; guides — Sanjeev Power Controls{% endblock %}
+{% block description %}Practical notes on diesel generator parts, filtration, maintenance planning and enquiry preparation from Sanjeev Power Controls.{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'core:home' %}">Home</a></li>
+      <li aria-current="page">Insights</li>
+    </ol>
+    <p class="eyebrow eyebrow--light">Insights &amp; guides</p>
+    <h1>Notes for better parts decisions.</h1>
+    <p class="page-hero__lead">Articles about filtration, maintenance planning and preparing a clear parts enquiry. Product-specific details must still be confirmed against the engine and application.</p>
+    <div class="page-hero__meta">
+      {% if posts %}
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>{{ page_obj.paginator.count }} article{{ page_obj.paginator.count|pluralize }}</span>
+      {% endif %}
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>Verify before ordering</span>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container">
+    <form class="catalogue-toolbar blog-toolbar" method="get" action="{% url 'blog:list' %}" role="search">
+      <div class="catalogue-search">
+        <label class="visually-hidden" for="blog-q">Search articles</label>
+        <div class="search{% if query %} has-value{% endif %}">
+          <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+          <input id="blog-q" type="search" name="q" value="{{ query }}" placeholder="Search articles or tags" autocomplete="off">
+        </div>
+      </div>
+      <div class="catalogue-select">
+        <label class="visually-hidden" for="blog-category">Filter by category</label>
+        <select id="blog-category" name="category">
+          <option value="">All categories</option>
+          {% for category in categories %}
+          <option value="{{ category.slug }}" {% if category_slug == category.slug %}selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn btn--navy" type="submit">Apply</button>
+      {% if query or category_slug or tag %}
+      <a class="btn btn--outline" href="{% url 'blog:list' %}">Reset</a>
+      {% endif %}
+    </form>
+
+    {% if tag %}<p class="blog-filter-note">Showing articles tagged &ldquo;{{ tag }}&rdquo;.</p>{% endif %}
+
+    {% if posts %}
+    <div class="blog-grid">
+      {% for post in posts %}
+      <article class="blog-card" data-reveal>
+        <a class="blog-card__media" href="{{ post.get_absolute_url }}" tabindex="-1" aria-hidden="true">
+          {% if post.display_image_url %}
+          <img src="{{ post.display_image_url }}" alt="{{ post.display_alt }}" width="640" height="400" loading="lazy" decoding="async">
+          {% else %}
+          <span class="blog-card__blank"><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg></span>
+          {% endif %}
+        </a>
+        <div class="blog-card__body">
+          <div class="blog-card__meta">
+            {% if post.category %}<span class="blog-tag">{{ post.category.name }}</span>{% endif %}
+            <time datetime="{{ post.published_at|date:'Y-m-d' }}">{{ post.published_at|date:"j M Y" }}</time>
+            <span>{{ post.reading_minutes }} min read</span>
+          </div>
+          <h2><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
+          <p>{{ post.excerpt|default:post.content|striptags|truncatechars:170 }}</p>
+          <a class="link-arrow" href="{{ post.get_absolute_url }}">
+            Read article
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="pagination" aria-label="Article pagination">
+      {% if page_obj.has_previous %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" rel="prev">Previous</a>
+      {% else %}
+      <span class="page-link is-disabled">Previous</span>
+      {% endif %}
+      <span class="page-status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" rel="next">Next</a>
+      {% else %}
+      <span class="page-link is-disabled">Next</span>
+      {% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state is-visible">
+      <svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>
+      <h3>{% if query or category_slug or tag %}No articles match this search{% else %}No articles published yet{% endif %}</h3>
+      <p>{% if query or category_slug or tag %}Try a shorter keyword or clear the filters.{% else %}Published guides will appear here once the team adds them from the dashboard.{% endif %}</p>
+      {% if query or category_slug or tag %}
+      <a class="btn btn--navy btn--sm" href="{% url 'blog:list' %}">Show all articles</a>
+      {% else %}
+      <a class="btn btn--navy btn--sm" href="{% url 'products:list' %}">Browse products</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="catalogue-help">
+      <div>
+        <h2>Need a specific part?</h2>
+        <p>Share the part number, engine model, quantity and application so the requirement can be checked.</p>
+      </div>
+      <a class="btn btn--primary" href="{% url 'core:contact' %}">
+        Send an enquiry
+        <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Staff accounts{% endblock %}
+{% block eyebrow %}Access control{% endblock %}
+{% block page_title %}Staff accounts{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:staff_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  Add staff account
+</a>
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">Only superusers can manage staff accounts. Passwords use Django’s authentication framework and are never stored in plain text.</p>
+
+<form class="dash-filter" method="get" action="{% url 'dashboard:staff_list' %}" role="search">
+  <div class="dash-filter__search">
+    <label class="visually-hidden" for="staff-q">Search staff</label>
+    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+    <input id="staff-q" type="search" name="q" value="{{ query }}" placeholder="Search username, name or email">
+  </div>
+  <button class="btn btn--navy btn--sm" type="submit">Search</button>
+  {% if query %}<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:staff_list' %}">Reset</a>{% endif %}
+</form>
+
+<section class="dash-card dash-card--flush">
+  {% if staff_users %}
+  <div class="table-wrap">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th scope="col">Account</th>
+          <th scope="col">Email</th>
+          <th scope="col">Groups</th>
+          <th scope="col">Role</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="ta-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for staff_user in staff_users %}
+        <tr>
+          <td>
+            <strong>{{ staff_user.get_full_name|default:staff_user.username }}</strong>
+            <span class="dash-sub mono">{{ staff_user.username }}</span>
+          </td>
+          <td>{{ staff_user.email|default:"—" }}</td>
+          <td>
+            {% for group in staff_user.groups.all %}
+            <span class="status-pill status-pill--neutral">{{ group.name }}</span>
+            {% empty %}
+            <span class="dash-sub">No groups</span>
+            {% endfor %}
+          </td>
+          <td>
+            {% if staff_user.is_superuser %}
+            <span class="status-pill status-pill--featured">Superuser</span>
+            {% else %}
+            <span class="status-pill status-pill--neutral">Staff</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="status-pill status-pill--{% if staff_user.is_active %}active{% else %}closed{% endif %}">
+              {% if staff_user.is_active %}Active{% else %}Disabled{% endif %}
+            </span>
+          </td>
+          <td>
+            <div class="row-actions">
+              <a class="icon-btn" href="{% url 'dashboard:staff_edit' staff_user.pk %}" title="Edit" aria-label="Edit {{ staff_user.username }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+              </a>
+              <a class="icon-btn" href="{% url 'admin:auth_user_change' staff_user.pk %}" target="_blank" rel="noopener" title="Django admin" aria-label="Open {{ staff_user.username }} in Django admin">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-cog"></use></svg>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-users"></use></svg>
+    <h3>No staff accounts found</h3>
+    <p>{% if query %}No accounts match “{{ query }}”.{% else %}Create a staff account to delegate catalogue management.{% endif %}</p>
+    {% if query %}
+    <a class="btn btn--outline btn--sm" href="{% url 'dashboard:staff_list' %}">Clear search</a>
+    {% else %}
+    <a class="btn btn--primary btn--sm" href="{% url 'dashboard:staff_create' %}">Add staff account</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+
+<div class="notice">
+  <svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
+  <p><strong>Permissions:</strong> dashboard sections check Django model permissions. Assign groups from the staff form to control product, category, enquiry and settings access. Superuser accounts bypass these checks.</p>
+</div>
+{% endblock %}

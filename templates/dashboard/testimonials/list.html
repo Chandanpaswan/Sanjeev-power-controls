@@ -1,0 +1,104 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Testimonials{% endblock %}
+{% block eyebrow %}Site content{% endblock %}
+{% block page_title %}Testimonials{% endblock %}
+
+{% block page_actions %}
+{% if perms.cms.add_testimonial %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:testimonial_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  Add testimonial
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ total_count }} testimonial{{ total_count|pluralize }} · {{ published_count }} public · {{ pending_count }} awaiting review. Only approved and published testimonials appear on the website.</p>
+
+<form class="dash-filter dash-filter--wrap" method="get" action="{% url 'dashboard:testimonial_list' %}">
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="testimonial-status">Status</label>
+    <select id="testimonial-status" name="status">
+      <option value="">All testimonials</option>
+      <option value="published" {% if status == 'published' %}selected{% endif %}>Published</option>
+      <option value="pending" {% if status == 'pending' %}selected{% endif %}>Awaiting review</option>
+      <option value="hidden" {% if status == 'hidden' %}selected{% endif %}>Hidden</option>
+    </select>
+  </div>
+  <button class="btn btn--navy btn--sm" type="submit">Filter</button>
+  {% if status %}<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:testimonial_list' %}">Reset</a>{% endif %}
+</form>
+
+{% if testimonials %}
+<div class="testimonial-grid">
+  {% for testimonial in testimonials %}
+  <article class="dash-card testimonial-card">
+    <header class="testimonial-card__head">
+      {% if testimonial.photo_url %}
+      <img class="testimonial-card__avatar" src="{{ testimonial.photo_url }}" alt="" width="46" height="46" loading="lazy">
+      {% else %}
+      <span class="testimonial-card__avatar testimonial-card__avatar--blank" aria-hidden="true">{{ testimonial.customer_name|slice:":1"|upper }}</span>
+      {% endif %}
+      <div>
+        <h2>{{ testimonial.customer_name }}</h2>
+        <p class="dash-sub">{{ testimonial.designation }}{% if testimonial.designation and testimonial.company %} · {% endif %}{{ testimonial.company }}</p>
+      </div>
+      <div class="pill-stack">
+        {% if testimonial.is_public %}
+        <span class="status-pill status-pill--active">Public</span>
+        {% elif testimonial.is_approved %}
+        <span class="status-pill status-pill--progress">Approved · hidden</span>
+        {% else %}
+        <span class="status-pill status-pill--closed">Awaiting approval</span>
+        {% endif %}
+      </div>
+    </header>
+    <blockquote>{{ testimonial.quote|truncatechars:220 }}</blockquote>
+    <footer class="testimonial-card__foot">
+      <span class="dash-sub">
+        {% if testimonial.rating %}Rated {{ testimonial.rating }}/5 · {% endif %}Order {{ testimonial.order }} · {{ testimonial.created_at|date:"j M Y" }}
+      </span>
+      <div class="row-actions">
+        {% if perms.cms.change_testimonial %}
+        <a class="icon-btn" href="{% url 'dashboard:testimonial_edit' testimonial.pk %}" title="Edit" aria-label="Edit {{ testimonial.customer_name }}">
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+        </a>
+        <form method="post" action="{% url 'dashboard:testimonial_toggle' testimonial.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button class="icon-btn" type="submit" title="{% if testimonial.is_published %}Hide from website{% else %}Publish{% endif %}" aria-label="{% if testimonial.is_published %}Hide{% else %}Publish{% endif %} testimonial by {{ testimonial.customer_name }}">
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{% if testimonial.is_published %}eye{% else %}check{% endif %}"></use></svg>
+          </button>
+        </form>
+        {% endif %}
+        {% if perms.cms.delete_testimonial %}
+        <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:testimonial_delete' testimonial.pk %}" title="Delete" aria-label="Delete testimonial by {{ testimonial.customer_name }}">
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+        </a>
+        {% endif %}
+      </div>
+    </footer>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="dash-card">
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-star"></use></svg>
+    <h3>{% if status %}No testimonials match this filter{% else %}No testimonials yet{% endif %}</h3>
+    <p>Only add testimonials that have been supplied and approved by the customer.</p>
+    {% if status %}
+    <a class="btn btn--outline btn--sm" href="{% url 'dashboard:testimonial_list' %}">Clear filter</a>
+    {% elif perms.cms.add_testimonial %}
+    <a class="btn btn--primary btn--sm" href="{% url 'dashboard:testimonial_create' %}">Add testimonial</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<div class="notice">
+  <svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
+  <p><strong>Real quotes only.</strong> Do not invent customer names, companies or feedback. Nothing appears publicly unless it is approved and published here.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+  <title id="title">Illustrative render of a DG set engine spare parts kit</title>
+  <desc id="desc">Studio-style overhead illustration of an organised spare parts tray containing a piston, gasket, bearing and fasteners. Illustrative product visual, not a photograph.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F8FAFC"/>
+      <stop offset="0.55" stop-color="#EEF3F8"/>
+      <stop offset="1" stop-color="#E3EAF2"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#0B1F3A" stroke-opacity="0.045" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="tray" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E9EFF6"/>
+      <stop offset="1" stop-color="#C9D5E2"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F7FAFD"/>
+      <stop offset="0.28" stop-color="#C7D3DF"/>
+      <stop offset="0.5" stop-color="#8FA0B2"/>
+      <stop offset="0.72" stop-color="#DCE4EC"/>
+      <stop offset="1" stop-color="#9DABBB"/>
+    </linearGradient>
+    <linearGradient id="piston" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F2F6FA"/>
+      <stop offset="0.4" stop-color="#BCC9D6"/>
+      <stop offset="0.68" stop-color="#DDE5EE"/>
+      <stop offset="1" stop-color="#8E9FAF"/>
+    </linearGradient>
+    <linearGradient id="gasket" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#D92332"/>
+      <stop offset="0.5" stop-color="#A81A26"/>
+      <stop offset="1" stop-color="#7E111B"/>
+    </linearGradient>
+    <linearGradient id="bearing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E5ECF3"/>
+      <stop offset="0.5" stop-color="#9EADBC"/>
+      <stop offset="1" stop-color="#6B7C8F"/>
+    </linearGradient>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="220%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#0B1F3A" flood-opacity="0.22"/>
+    </filter>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#0B1F3A" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#grid)"/>
+  <ellipse cx="400" cy="505" rx="265" ry="36" fill="#0B1F3A" opacity="0.09"/>
+
+  <g filter="url(#shadow)">
+    <!-- tray -->
+    <rect x="158" y="132" width="484" height="348" rx="26" fill="#8C9EB0"/>
+    <rect x="166" y="140" width="468" height="332" rx="20" fill="url(#tray)"/>
+    <rect x="166" y="140" width="468" height="12" rx="6" fill="#FFFFFF" opacity="0.65"/>
+    <rect x="166" y="452" width="468" height="12" rx="6" fill="#0B1F3A" opacity="0.12"/>
+    <rect x="150" y="128" width="500" height="8" rx="4" fill="#D92332" opacity="0.9"/>
+
+    <!-- tray dividers -->
+    <path d="M400 148v206M400 354h226" stroke="#8497AA" stroke-width="8" stroke-linecap="round" opacity="0.55"/>
+    <path d="M408 148v206M408 354h218" stroke="#F6F9FC" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+    <path d="M174 354h218" stroke="#8497AA" stroke-width="8" stroke-linecap="round" opacity="0.55"/>
+
+    <!-- piston -->
+    <g filter="url(#soft)" transform="translate(282 268)">
+      <circle r="78" fill="url(#piston)"/>
+      <circle r="78" fill="none" stroke="#F8FAFC" stroke-width="2" opacity="0.7"/>
+      <circle r="66" fill="none" stroke="#7F8FA1" stroke-width="2.5" opacity="0.6"/>
+      <circle r="58" fill="none" stroke="#7F8FA1" stroke-width="2.5" opacity="0.5"/>
+      <circle r="50" fill="none" stroke="#7F8FA1" stroke-width="2" opacity="0.4"/>
+      <path d="M-64 -22a64 64 0 0 1 30-34" stroke="#FFFFFF" stroke-width="4" opacity="0.55" fill="none" stroke-linecap="round"/>
+      <circle r="17" fill="#64748B"/>
+      <circle r="17" fill="none" stroke="#E2E8F0" stroke-width="2"/>
+      <circle r="9" fill="#334155"/>
+      <circle r="9" fill="none" stroke="#94A3B8" stroke-width="1.5"/>
+      <g stroke="#64748B" stroke-width="2" opacity="0.5">
+        <path d="M-44 -44l-12-12M44 -44l12-12M-44 44l-12 12M44 44l12 12"/>
+      </g>
+    </g>
+
+    <!-- gasket -->
+    <g filter="url(#soft)" transform="translate(514 258)">
+      <path fill="url(#gasket)" fill-rule="evenodd" d="M0-82a82 82 0 1 0 0 164a82 82 0 1 0 0-164ZM0-56a56 56 0 1 0 0 112a56 56 0 1 0 0-112Z"/>
+      <circle r="82" fill="none" stroke="#F4575F" stroke-width="1.5" opacity="0.5"/>
+      <circle r="56" fill="none" stroke="#5C0C13" stroke-width="1.5" opacity="0.6"/>
+      <g fill="#F8FAFC">
+        <circle cx="0" cy="-69" r="4.5"/><circle cx="0" cy="69" r="4.5"/>
+        <circle cx="-69" cy="0" r="4.5"/><circle cx="69" cy="0" r="4.5"/>
+        <circle cx="49" cy="-49" r="4.5"/><circle cx="-49" cy="-49" r="4.5"/>
+        <circle cx="49" cy="49" r="4.5"/><circle cx="-49" cy="49" r="4.5"/>
+      </g>
+    </g>
+
+    <!-- bearing -->
+    <g filter="url(#soft)" transform="translate(288 424)">
+      <circle r="52" fill="url(#bearing)"/>
+      <circle r="43" fill="none" stroke="#64748B" stroke-width="2" opacity="0.6"/>
+      <circle r="30" fill="#F1F5F9"/>
+      <circle r="30" fill="none" stroke="#94A3B8" stroke-width="2"/>
+      <circle r="19" fill="#0B1F3A" opacity="0.85"/>
+      <g fill="#5B6C7E">
+        <circle cx="0" cy="-37" r="5"/><circle cx="32" cy="-18" r="5"/><circle cx="32" cy="18" r="5"/>
+        <circle cx="0" cy="37" r="5"/><circle cx="-32" cy="18" r="5"/><circle cx="-32" cy="-18" r="5"/>
+      </g>
+    </g>
+
+    <!-- bolts -->
+    <g filter="url(#soft)">
+      <g transform="translate(462 404)">
+        <circle r="21" fill="url(#steel)"/>
+        <path d="M-13-8h26v16h-26z" fill="#64748B"/>
+        <circle r="8" fill="#334155"/>
+        <path d="M-5 0h10M0-5v10" stroke="#94A3B8" stroke-width="1.5"/>
+      </g>
+      <g transform="translate(522 432)">
+        <circle r="19" fill="url(#steel)"/>
+        <path d="M-12-7h24v14h-24z" fill="#64748B"/>
+        <circle r="7" fill="#334155"/>
+      </g>
+      <g transform="translate(500 390)">
+        <circle r="16" fill="url(#steel)"/>
+        <path d="M-10-6h20v12h-20z" fill="#64748B"/>
+        <circle r="6" fill="#334155"/>
+      </g>
+      <g transform="translate(562 408)">
+        <circle r="14" fill="url(#steel)"/>
+        <path d="M-9-5h18v10h-18z" fill="#64748B"/>
+        <circle r="5" fill="#334155"/>
+      </g>
+    </g>
+  </g>
+</svg>

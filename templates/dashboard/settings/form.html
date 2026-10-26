@@ -1,0 +1,99 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block eyebrow %}{{ eyebrow }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{% url 'core:home' %}" target="_blank" rel="noopener">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-external"></use></svg>
+  Preview website
+</a>
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ description }}</p>
+
+<nav class="settings-tabs" aria-label="Website settings sections">
+  {% for tab in tabs %}
+  <a class="settings-tab{% if tab.active %} is-active{% endif %}" href="{{ tab.url }}"{% if tab.active %} aria-current="page"{% endif %}>
+    <strong>{{ tab.label }}</strong>
+    <span>{{ tab.description }}</span>
+  </a>
+  {% endfor %}
+</nav>
+
+<div class="notice notice--warn">
+  <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+  <p><strong>Verify before publishing.</strong> Contact details, business hours, social profiles and claims must be confirmed by the business. Blank contact fields remain hidden or show a clearly marked placeholder on the public site.</p>
+</div>
+
+<form method="post" class="dash-form" {% if form.is_multipart %}enctype="multipart/form-data"{% endif %} novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+  <div class="form-status is-visible" role="alert">
+    {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="settings-grid settings-grid--form">
+    {% for section in sections %}
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>{{ section.title }}</h2>
+          {% if section.description %}<p>{{ section.description }}</p>{% endif %}
+        </div>
+      </header>
+      <div class="field-grid">
+        {% for field in section.fields %}
+          {% include "dashboard/includes/field.html" with field=field %}
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+
+    <aside class="dash-card dash-card--quiet">
+      <header class="dash-card__head">
+        <div>
+          <h2>Last updated</h2>
+          <p>{{ site.updated_at|date:"j M Y, H:i" }}</p>
+        </div>
+      </header>
+      <ul class="detail-list detail-list--compact">
+        <li class="detail-row">
+          <dt>Company</dt>
+          <dd>{{ site.company_name }}</dd>
+        </li>
+        <li class="detail-row">
+          <dt>Phone</dt>
+          <dd>{% if site.has_phone %}{{ site.contact_phone }}{% else %}<span class="dash-sub">Not configured</span>{% endif %}</dd>
+        </li>
+        <li class="detail-row">
+          <dt>Email</dt>
+          <dd>{% if site.contact_email %}{{ site.contact_email }}{% else %}<span class="dash-sub">Not configured</span>{% endif %}</dd>
+        </li>
+        <li class="detail-row">
+          <dt>WhatsApp</dt>
+          <dd>{% if site.has_whatsapp %}{{ site.whatsapp_number }}{% else %}<span class="dash-sub">Not configured</span>{% endif %}</dd>
+        </li>
+        <li class="detail-row">
+          <dt>Indexing</dt>
+          <dd>{% if site.allow_search_indexing %}Allowed{% else %}Blocked (noindex){% endif %}</dd>
+        </li>
+        <li class="detail-row">
+          <dt>Maintenance</dt>
+          <dd>{% if site.maintenance_mode %}<span class="status-pill status-pill--progress">Enabled</span>{% else %}<span class="status-pill status-pill--active">Off</span>{% endif %}</dd>
+        </li>
+      </ul>
+    </aside>
+  </div>
+
+  <div class="dash-sticky-actions">
+    <button class="btn btn--primary" type="submit">{{ submit_label }}</button>
+    <a class="btn btn--ghost" href="{{ cancel_url }}">Cancel</a>
+    <span class="dash-sub">Changes appear on the public website immediately.</span>
+  </div>
+</form>
+{% endblock %}

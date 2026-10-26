@@ -1,0 +1,164 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Enquiry {{ enquiry.reference }}{% endblock %}
+{% block eyebrow %}Customer enquiry{% endblock %}
+{% block page_title %}Enquiry {{ enquiry.reference }}{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:enquiry_list' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+  All enquiries
+</a>
+<a class="btn btn--outline btn--sm" href="{% url 'dashboard:enquiry_delete' enquiry.pk %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+  Delete
+</a>
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">
+  Received {{ enquiry.created_at|date:"j F Y" }} at {{ enquiry.created_at|date:"H:i" }}
+  · Status <span class="status-pill status-pill--{{ enquiry.status_css }}">{{ enquiry.get_status_display }}</span>
+</p>
+
+<div class="dash-columns dash-columns--detail">
+  <div class="dash-columns__main">
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Enquirer</h2>
+          <p>Contact details submitted through the public form.</p>
+        </div>
+        <span class="demo-tag demo-tag--neutral">Private</span>
+      </header>
+
+      <dl class="detail-list">
+        <div class="detail-row">
+          <dt>Name</dt>
+          <dd>{{ enquiry.name }}</dd>
+        </div>
+        <div class="detail-row">
+          <dt>Company</dt>
+          <dd>{{ enquiry.company|default:"Not supplied" }}</dd>
+        </div>
+        <div class="detail-row">
+          <dt>Email</dt>
+          <dd><a href="mailto:{{ enquiry.email }}">{{ enquiry.email }}</a></dd>
+        </div>
+        <div class="detail-row">
+          <dt>Phone</dt>
+          <dd><a href="tel:{{ enquiry.phone }}">{{ enquiry.phone }}</a></dd>
+        </div>
+        <div class="detail-row">
+          <dt>Product interest</dt>
+          <dd>
+            {% if enquiry.product %}
+            <a href="{{ enquiry.product.get_absolute_url }}" target="_blank" rel="noopener">{{ enquiry.product.name }}</a>
+            <span class="dash-sub">{{ enquiry.product.category.name }} · {{ enquiry.product.sku }}</span>
+            {% else %}
+            {{ enquiry.product_label }}
+            {% endif %}
+          </dd>
+        </div>
+      </dl>
+
+      <div class="enquiry-message">
+        <h3>Message</h3>
+        <p>{{ enquiry.message|linebreaksbr }}</p>
+      </div>
+    </section>
+
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Follow-up</h2>
+          <p>Update the status and keep a private internal note.</p>
+        </div>
+      </header>
+
+      {% if can_change %}
+      <form method="post" class="dash-form" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="form-status is-visible" role="alert">
+          {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="field-grid">
+          <div class="field{% if form.status.errors %} has-error{% endif %}">
+            <label for="{{ form.status.id_for_label }}">Status</label>
+            {{ form.status }}
+            {% for error in form.status.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+
+          <div class="field field--full{% if form.internal_notes.errors %} has-error{% endif %}">
+            <label for="{{ form.internal_notes.id_for_label }}">Internal notes</label>
+            {{ form.internal_notes }}
+            <span class="hint">Staff only. These notes are never shown on the public website.</span>
+            {% for error in form.internal_notes.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+        </div>
+
+        <div class="dash-form__actions">
+          <button class="btn btn--primary" type="submit">Save follow-up</button>
+          <span class="dash-sub">Last updated {{ enquiry.updated_at|date:"j M Y, H:i" }}</span>
+        </div>
+      </form>
+      {% else %}
+      <div class="notice notice--warn">
+        <svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
+        <p>Your account can view this enquiry but does not have permission to change its status or notes.</p>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+
+  <aside class="dash-columns__side">
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Record</h2>
+        </div>
+      </header>
+      <dl class="detail-list detail-list--compact">
+        <div class="detail-row"><dt>Reference</dt><dd class="mono">{{ enquiry.reference }}</dd></div>
+        <div class="detail-row"><dt>Received</dt><dd>{{ enquiry.created_at|date:"j M Y, H:i" }}</dd></div>
+        <div class="detail-row"><dt>Updated</dt><dd>{{ enquiry.updated_at|date:"j M Y, H:i" }}</dd></div>
+        <div class="detail-row"><dt>Status</dt><dd>{{ enquiry.get_status_display }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Respond</h2>
+          <p>No email delivery is configured in this demo.</p>
+        </div>
+      </header>
+      <div class="stack-actions">
+        <a class="btn btn--outline btn--block btn--sm" href="mailto:{{ enquiry.email }}?subject=Enquiry%20{{ enquiry.reference|urlencode }}">
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-mail"></use></svg>
+          Email the enquirer
+        </a>
+        <a class="btn btn--outline btn--block btn--sm" href="tel:{{ enquiry.phone }}">
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-phone"></use></svg>
+          Call the enquirer
+        </a>
+      </div>
+      <div class="notice notice--compact">
+        <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+        <p>These links open your own email client or phone app. The website does not send messages automatically.</p>
+      </div>
+    </section>
+
+    <section class="dash-card dash-card--quiet">
+      <header class="dash-card__head">
+        <div><h2>Privacy</h2></div>
+      </header>
+      <p class="dash-note">Customer enquiries are private. Do not forward them outside the business, and delete records that are no longer needed.</p>
+    </section>
+  </aside>
+</div>
+{% endblock %}

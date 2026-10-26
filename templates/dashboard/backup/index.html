@@ -1,0 +1,140 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Backup &amp; maintenance{% endblock %}
+{% block eyebrow %}Operations{% endblock %}
+{% block page_title %}Backup &amp; maintenance{% endblock %}
+
+{% block page_actions %}
+<form method="post" action="{% url 'dashboard:backup_create' %}">
+  {% csrf_token %}
+  <button class="btn btn--primary btn--sm" type="submit">
+    <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+    Create backup now
+  </button>
+</form>
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">Backups are written outside the public media directory and can only be downloaded by a superuser. This page is restricted to superuser accounts.</p>
+
+<div class="stat-grid">
+  <article class="stat-card">
+    <span class="stat-card__icon stat-card__icon--blue"><svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg></span>
+    <span class="stat-card__value">{{ backups|length }}</span>
+    <span class="stat-card__label">Backup files</span>
+    <span class="stat-card__meta">Stored on the server</span>
+  </article>
+  <article class="stat-card">
+    <span class="stat-card__icon stat-card__icon--green"><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg></span>
+    <span class="stat-card__value">{{ db_size|default:"—" }}</span>
+    <span class="stat-card__label">Database size</span>
+    <span class="stat-card__meta">{{ engine }} database engine</span>
+  </article>
+  <article class="stat-card">
+    <span class="stat-card__icon stat-card__icon--blue"><svg class="icon" aria-hidden="true"><use href="#icon-image"></use></svg></span>
+    <span class="stat-card__value">{{ media_size }}</span>
+    <span class="stat-card__label">Media storage</span>
+    <span class="stat-card__meta">{{ media_files }} file{{ media_files|pluralize }} under MEDIA_ROOT</span>
+  </article>
+  <article class="stat-card{% if maintenance_mode %} stat-card--alert{% endif %}">
+    <span class="stat-card__icon stat-card__icon--red"><svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg></span>
+    <span class="stat-card__value">{% if maintenance_mode %}On{% else %}Off{% endif %}</span>
+    <span class="stat-card__label">Maintenance mode</span>
+    <span class="stat-card__meta">{% if maintenance_mode %}The public site is closed{% else %}The public site is live{% endif %}</span>
+  </article>
+</div>
+
+<div class="dash-columns">
+  <section class="dash-card dash-card--flush">
+    <header class="dash-card__head">
+      <div>
+        <h2>Available backups</h2>
+        <p>Newest first. Download a copy before deleting a file.</p>
+      </div>
+    </header>
+    {% if backups %}
+    <div class="table-wrap">
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th scope="col">File</th>
+            <th scope="col">Type</th>
+            <th scope="col">Size</th>
+            <th scope="col">Created</th>
+            <th scope="col" class="ta-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for backup in backups %}
+          <tr>
+            <td><span class="mono">{{ backup.name }}</span></td>
+            <td>{{ backup.kind }}</td>
+            <td>{{ backup.size_label }}</td>
+            <td><span title="{{ backup.modified }}">{{ backup.modified|date:"j M Y, H:i" }}</span></td>
+            <td>
+              <div class="row-actions">
+                <a class="icon-btn" href="{% url 'dashboard:backup_download' backup.name %}" title="Download" aria-label="Download {{ backup.name }}">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-up"></use></svg>
+                </a>
+                <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:backup_delete' backup.name %}" title="Delete" aria-label="Delete {{ backup.name }}">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="dash-empty">
+      <svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
+      <h3>No backups yet</h3>
+      <p>Create the first backup before making large content changes.</p>
+      <form method="post" action="{% url 'dashboard:backup_create' %}">
+        {% csrf_token %}
+        <button class="btn btn--primary btn--sm" type="submit">Create backup now</button>
+      </form>
+    </div>
+    {% endif %}
+  </section>
+
+  <aside class="dash-columns__side">
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Backup details</h2>
+        </div>
+      </header>
+      <ul class="detail-list detail-list--compact">
+        <li class="detail-row"><dt>Directory</dt><dd class="mono">{{ backup_dir }}</dd></li>
+        <li class="detail-row"><dt>Engine</dt><dd>{{ engine }}</dd></li>
+        <li class="detail-row"><dt>Last backup</dt><dd>{% if last_backup %}{{ last_backup.modified|date:"j M Y, H:i" }}{% else %}Never{% endif %}</dd></li>
+        <li class="detail-row"><dt>Download access</dt><dd>Superusers only</dd></li>
+      </ul>
+    </section>
+
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Maintenance mode</h2>
+          <p>Temporarily close the public website.</p>
+        </div>
+      </header>
+      <p class="dash-note">Maintenance mode is controlled from <a href="{% url 'dashboard:general_settings' %}">General settings</a>. Staff can still sign in to the dashboard while the public site shows the maintenance page.</p>
+      <div class="dash-form__submit">
+        <a class="btn btn--outline btn--sm" href="{% url 'dashboard:general_settings' %}">Open general settings</a>
+      </div>
+    </section>
+
+    <section class="dash-card dash-card--quiet">
+      <header class="dash-card__head">
+        <div>
+          <h2>Restore guidance</h2>
+        </div>
+      </header>
+      <p class="dash-note">Restoring a backup replaces current data. Download the file, stop the server, keep a copy of the existing database, then replace it with the backup. Test the restored site before reopening it to the public.</p>
+    </section>
+  </aside>
+</div>
+{% endblock %}

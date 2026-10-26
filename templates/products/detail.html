@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if product.seo_title %}{{ product.seo_title }}{% else %}{{ product.name }} &mdash; {{ site_profile.company_name|default:"Sanjeev Power Controls" }}{% endif %}{% endblock %}
+{% block description %}{{ product.seo_description|default:product.short_description }}{% endblock %}
+{% block robots %}{% if site_profile.allow_search_indexing %}index,follow{% else %}noindex,nofollow{% endif %}{% endblock %}
+{% block canonical %}{{ product.canonical_url|default:request.build_absolute_uri }}{% endblock %}
+{% block og_type %}product{% endblock %}
+{% block og_title %}{{ product.seo_title|default:product.name }} &mdash; demo listing{% endblock %}
+{% block og_description %}{{ product.seo_description|default:product.short_description }}{% endblock %}
+{% block og_image %}{% if product.og_image %}{{ request.scheme }}://{{ request.get_host }}{{ product.og_image.url }}{% elif product.display_image_url %}{{ request.scheme }}://{{ request.get_host }}{{ product.display_image_url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "{{ product.name|escapejs }}",
+  "sku": "{{ product.sku|escapejs }}",
+  "category": "{{ product.category.name|escapejs }}",
+  "description": "{{ product.short_description|escapejs }}",
+  {% if product.display_image_url %}"image": "{{ request.scheme }}://{{ request.get_host }}{{ product.display_image_url }}",{% endif %}
+  "brand": {"@type": "Brand", "name": "{{ site_profile.company_name|default:'Sanjeev Power Controls'|escapejs }}"}
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'core:home' %}">Home</a></li>
+      <li><a href="{% url 'products:list' %}">Products</a></li>
+      <li><a href="{% url 'products:list' %}?category={{ product.category.slug }}">{{ product.category.name }}</a></li>
+      <li aria-current="page">{{ product.name }}</li>
+    </ol>
+    <p class="eyebrow eyebrow--light">Demo product · {{ product.category.name }}</p>
+    <h1>{{ product.name }}</h1>
+    <p class="page-hero__lead">{{ product.short_description }}</p>
+    <div class="page-hero__meta">
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-tag"></use></svg>SKU: {{ product.sku }}</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>Specifications unverified</span>
+      {% if product.featured %}<span><svg class="icon" aria-hidden="true"><use href="#icon-star"></use></svg>Featured demo item</span>{% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container">
+    <div class="product-detail">
+      <div class="product-detail__media" data-reveal>
+        <div class="product-detail__frame">
+          {% if product.display_image_url %}
+          <img src="{{ product.display_image_url }}" alt="{{ product.display_alt }}" width="1000" height="750" decoding="async">
+          {% else %}
+          <img src="{% static 'images/products/placeholder.svg' %}" alt="Product image placeholder for {{ product.name }}" width="800" height="600" decoding="async">
+          {% endif %}
+        </div>
+        <p class="product-detail__media-note">Illustrative render — not a photograph of a supplied part.</p>
+      </div>
+
+      <div class="product-detail__body" data-reveal data-reveal-delay="1">
+        <div class="product-detail__flags">
+          <span class="demo-tag">Demo product</span>
+          <span class="demo-tag demo-tag--neutral">{{ product.category.name }}</span>
+        </div>
+        <h2>About this listing</h2>
+        <p>{{ product.description }}</p>
+
+        {% if product.specification_rows %}
+        <table class="spec-table">
+          <caption>Specification record (unverified demo data)</caption>
+          <tbody>
+            {% for label, value in product.specification_rows %}
+            <tr><th scope="row">{{ label }}</th><td>{{ value }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+
+        <div class="notice notice--warn">
+          <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+          <p><strong>Do not order from this demo.</strong> Part numbers, dimensions, compatibility and availability must be confirmed by Sanjeev Power Controls before purchase.</p>
+        </div>
+
+        <div class="product-detail__actions">
+          <a class="btn btn--primary" href="{{ product.enquiry_url }}">
+            Request Enquiry
+            <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+          </a>
+          <a class="btn btn--outline" href="{% url 'products:list' %}">
+            Back to catalogue
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if related_products %}
+<section class="section section--light">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy">
+        <p class="eyebrow">Related items</p>
+        <h2>More from {{ product.category.name }}.</h2>
+      </div>
+      <div class="section-head__aside">
+        <a class="link-arrow" href="{% url 'products:list' %}?category={{ product.category.slug }}">
+          View category
+          <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+        </a>
+      </div>
+    </div>
+    <div class="product-grid product-grid--related">
+      {% for related in related_products %}
+        {% include "includes/product_card.html" with product=related %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section cta-section">
+  <div class="container">
+    <div class="cta-banner" data-reveal>
+      <div>
+        <p class="eyebrow eyebrow--light">Confirm before you commit</p>
+        <h2>Ask about {{ product.name }}.</h2>
+        <p>The enquiry form is pre-filled with this product. Add the engine model, part number and quantity so the requirement can be checked.</p>
+      </div>
+      <div class="cta-banner__actions">
+        <a class="btn btn--light" href="{{ product.enquiry_url }}">
+          Request Enquiry
+          <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+        </a>
+        <a class="btn btn--ghost-light" href="{% url 'core:contact' %}">General enquiry</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

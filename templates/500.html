@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Something went wrong — Sanjeev Power Controls{% endblock %}
+{% block description %}A server error occurred while handling this request.{% endblock %}
+{% block robots %}noindex,nofollow{% endblock %}
+
+{% block content %}
+<section class="section section--light error-page">
+  <div class="container">
+    <div class="error-card" data-reveal>
+      <p class="error-code">500</p>
+      <h1>Something went wrong on our side.</h1>
+      <p>The request could not be completed. Please try again, or use the enquiry form if the problem continues.</p>
+      <div class="error-card__actions">
+        <a class="btn btn--primary" href="{% url 'core:home' %}">Back to home</a>
+        <a class="btn btn--outline" href="{% url 'core:contact' %}">Contact us</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

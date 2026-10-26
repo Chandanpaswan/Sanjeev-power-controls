@@ -1,0 +1,122 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Activity logs{% endblock %}
+{% block eyebrow %}Operations{% endblock %}
+{% block page_title %}Activity logs{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--outline btn--sm" href="{% url 'dashboard:activity_export' %}{% if querystring %}?{{ querystring }}{% endif %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-file"></use></svg>
+  Export CSV
+</a>
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ total_count }} matching record{{ total_count|pluralize }} of {{ all_count }} total. Changes made through the dashboard are recorded with the acting account, time and IP address.</p>
+
+<form class="dash-filter dash-filter--wrap" method="get" action="{% url 'dashboard:activity_list' %}">
+  <div class="dash-filter__search">
+    <label class="visually-hidden" for="activity-q">Search activity</label>
+    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+    <input id="activity-q" type="search" name="q" value="{{ query }}" placeholder="Search description or account">
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="activity-action">Action</label>
+    <select id="activity-action" name="action">
+      <option value="">Any action</option>
+      {% for value, label in action_choices %}
+      <option value="{{ value }}" {% if action == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="activity-user">Account</label>
+    <select id="activity-user" name="user">
+      <option value="">All accounts</option>
+      {% for staff_user in staff_users %}
+      <option value="{{ staff_user.pk }}" {% if selected_user == staff_user.pk|stringformat:"s" %}selected{% endif %}>{{ staff_user.get_full_name|default:staff_user.username }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="dash-filter__field dash-filter__field--date">
+    <label for="activity-from">From</label>
+    <input id="activity-from" type="date" name="date_from" value="{{ date_from }}">
+  </div>
+  <div class="dash-filter__field dash-filter__field--date">
+    <label for="activity-to">To</label>
+    <input id="activity-to" type="date" name="date_to" value="{{ date_to }}">
+  </div>
+  <button class="btn btn--navy btn--sm" type="submit">Filter</button>
+  {% if query or action or selected_user or date_from or date_to %}
+  <a class="btn btn--ghost btn--sm" href="{% url 'dashboard:activity_list' %}">Reset</a>
+  {% endif %}
+</form>
+
+<section class="dash-card dash-card--flush">
+  {% if logs %}
+  <div class="table-wrap">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th scope="col">When</th>
+          <th scope="col">Account</th>
+          <th scope="col">Action</th>
+          <th scope="col">Description</th>
+          <th scope="col">Target</th>
+          <th scope="col">IP address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td><span title="{{ log.created_at }}">{{ log.created_at|date:"j M Y" }}</span><span class="dash-sub">{{ log.created_at|date:"H:i:s" }}</span></td>
+          <td>
+            {% if log.user %}
+            <strong>{{ log.user.get_full_name|default:log.user.username }}</strong>
+            <span class="dash-sub mono">{{ log.user.username }}</span>
+            {% else %}
+            <strong>System</strong>
+            {% endif %}
+          </td>
+          <td><span class="status-pill status-pill--neutral">{{ log.get_action_display }}</span></td>
+          <td>{{ log.description }}</td>
+          <td>
+            {% if log.target_type %}
+            <span class="mono">{{ log.target_type }}{% if log.target_id %}#{{ log.target_id }}{% endif %}</span>
+            {% else %}
+            <span class="dash-sub">—</span>
+            {% endif %}
+          </td>
+          <td><span class="mono">{{ log.ip_address|default:"—" }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="dash-pagination" aria-label="Activity pagination">
+    <span class="dash-pagination__status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <div class="dash-pagination__links">
+      {% if page_obj.has_previous %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+    <h3>{% if query or action or selected_user or date_from or date_to %}No activity matches these filters{% else %}No activity recorded yet{% endif %}</h3>
+    <p>{% if query or action or selected_user or date_from or date_to %}Try a broader date range or clear the filters.{% else %}Dashboard changes will be recorded here automatically.{% endif %}</p>
+    {% if query or action or selected_user or date_from or date_to %}
+    <a class="btn btn--outline btn--sm" href="{% url 'dashboard:activity_list' %}">Clear filters</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

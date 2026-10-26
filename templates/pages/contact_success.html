@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Enquiry received — Sanjeev Power Controls{% endblock %}
+{% block description %}Confirmation that the demonstration enquiry was recorded.{% endblock %}
+{% block robots %}noindex,nofollow{% endblock %}
+
+{% block content %}
+<section class="section section--light success-page">
+  <div class="container">
+    <div class="success-card" data-reveal>
+      <div class="form-success__icon">
+        <svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+      </div>
+      <p class="eyebrow">Enquiry recorded</p>
+      <h1>Thank you — the enquiry is in the dashboard.</h1>
+      <p>This demonstration saved the enquiry to the local SQLite database. Staff can review it under <strong>Enquiries</strong> in the admin panel. No email or WhatsApp message has been sent.</p>
+
+      {% if reference %}
+      <div class="reference-box">
+        <span>Reference number</span>
+        <strong>{{ reference }}</strong>
+        <p>Keep this reference for follow-up. It is also stored with the enquiry record.</p>
+      </div>
+      {% endif %}
+
+      <div class="notice">
+        <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+        <p>Before launch, connect email delivery so enquiries can also be delivered by email.</p>
+      </div>
+
+      <div class="success-card__actions">
+        <a class="btn btn--navy" href="{% url 'products:list' %}">Browse products</a>
+        <a class="btn btn--outline" href="{% url 'core:home' %}">Back to home</a>
+        <a class="btn btn--outline" href="{% url 'core:contact' %}">Send another enquiry</a>
+      </div>
+
+      <p class="success-card__admin">
+        Staff: <a href="{% url 'dashboard:login' %}">open the admin dashboard</a>
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}

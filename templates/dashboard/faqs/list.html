@@ -1,0 +1,90 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}FAQs{% endblock %}
+{% block eyebrow %}Site content{% endblock %}
+{% block page_title %}Frequently asked questions{% endblock %}
+
+{% block page_actions %}
+{% if perms.cms.add_faq %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:faq_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  Add FAQ
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ total_count }} FAQ{{ total_count|pluralize }} · {{ published_count }} published. Published answers appear on the public website and may be used in structured data.</p>
+
+<form class="dash-filter" method="get" action="{% url 'dashboard:faq_list' %}" role="search">
+  <div class="dash-filter__search">
+    <label class="visually-hidden" for="faq-q">Search FAQs</label>
+    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+    <input id="faq-q" type="search" name="q" value="{{ query }}" placeholder="Search question, answer or category">
+  </div>
+  <button class="btn btn--navy btn--sm" type="submit">Search</button>
+  {% if query %}<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:faq_list' %}">Reset</a>{% endif %}
+</form>
+
+<section class="dash-card dash-card--flush">
+  {% if faqs %}
+  <div class="table-wrap">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th scope="col">Question</th>
+          <th scope="col">Category</th>
+          <th scope="col">Order</th>
+          <th scope="col">Status</th>
+          <th scope="col">Updated</th>
+          <th scope="col" class="ta-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for faq in faqs %}
+        <tr>
+          <td>
+            <a href="{% url 'dashboard:faq_edit' faq.pk %}">{{ faq.question }}</a>
+            <span class="dash-sub">{{ faq.answer|striptags|truncatechars:80 }}</span>
+          </td>
+          <td>{{ faq.category|default:"General" }}</td>
+          <td>{{ faq.order }}</td>
+          <td>
+            <span class="status-pill status-pill--{% if faq.is_published %}active{% else %}closed{% endif %}">
+              {% if faq.is_published %}Published{% else %}Hidden{% endif %}
+            </span>
+          </td>
+          <td>{{ faq.updated_at|date:"j M Y" }}</td>
+          <td>
+            <div class="row-actions">
+              {% if perms.cms.change_faq %}
+              <a class="icon-btn" href="{% url 'dashboard:faq_edit' faq.pk %}" title="Edit" aria-label="Edit FAQ: {{ faq.question }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+              </a>
+              {% endif %}
+              {% if perms.cms.delete_faq %}
+              <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:faq_delete' faq.pk %}" title="Delete" aria-label="Delete FAQ: {{ faq.question }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+    <h3>{% if query %}No FAQs match “{{ query }}”{% else %}No FAQs yet{% endif %}</h3>
+    <p>Answer common questions with factual, supportable information.</p>
+    {% if query %}
+    <a class="btn btn--outline btn--sm" href="{% url 'dashboard:faq_list' %}">Clear search</a>
+    {% elif perms.cms.add_faq %}
+    <a class="btn btn--primary btn--sm" href="{% url 'dashboard:faq_create' %}">Add FAQ</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

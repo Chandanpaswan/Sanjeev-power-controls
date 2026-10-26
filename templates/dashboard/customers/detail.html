@@ -1,0 +1,120 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ customer.name }}{% endblock %}
+{% block eyebrow %}Enquiries &amp; customers{% endblock %}
+{% block page_title %}{{ customer.name }}{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:customer_list' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+  Back to customers
+</a>
+{% if can_change %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:customer_edit' customer.pk %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+  Edit customer
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ customer.get_status_display }} customer since {{ customer.created_at|date:"j F Y" }} · {{ enquiry_count }} enquir{{ enquiry_count|pluralize:"y,ies" }} · {{ open_count }} open · {{ converted_count }} converted.</p>
+
+<div class="dash-columns dash-columns--detail">
+  <section class="dash-card dash-card--flush">
+    <header class="dash-card__head">
+      <div>
+        <h2>Enquiry history</h2>
+        <p>All enquiries linked to this customer.</p>
+      </div>
+    </header>
+    {% if enquiries %}
+    <div class="table-wrap">
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th scope="col">Reference</th>
+            <th scope="col">Product</th>
+            <th scope="col">Status</th>
+            <th scope="col">Received</th>
+            <th scope="col" class="ta-right">Open</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for enquiry in enquiries %}
+          <tr>
+            <td><a class="mono" href="{% url 'dashboard:enquiry_detail' enquiry.pk %}">{{ enquiry.reference }}</a></td>
+            <td>{{ enquiry.product_label|default:"General enquiry" }}</td>
+            <td><span class="status-pill status-pill--{{ enquiry.status_css }}">{{ enquiry.get_status_display }}</span></td>
+            <td>{{ enquiry.created_at|date:"j M Y" }}</td>
+            <td>
+              <div class="row-actions">
+                <a class="icon-btn" href="{% url 'dashboard:enquiry_detail' enquiry.pk %}" title="Open enquiry" aria-label="Open enquiry {{ enquiry.reference }}">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="dash-empty">
+      <svg class="icon" aria-hidden="true"><use href="#icon-inbox"></use></svg>
+      <h3>No linked enquiries</h3>
+      <p>Convert a qualified enquiry to attach its history to this customer.</p>
+      {% if perms.enquiries.view_enquiry %}
+      <a class="btn btn--outline btn--sm" href="{% url 'dashboard:enquiry_list' %}">Open enquiries</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </section>
+
+  <aside class="dash-columns__side">
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Customer details</h2>
+        </div>
+      </header>
+      <ul class="detail-list detail-list--compact">
+        <li class="detail-row"><dt>Name</dt><dd>{{ customer.name }}</dd></li>
+        <li class="detail-row"><dt>Contact</dt><dd>{{ customer.contact_person|default:"—" }}</dd></li>
+        <li class="detail-row"><dt>Email</dt><dd>{% if customer.email %}<a href="mailto:{{ customer.email }}">{{ customer.email }}</a>{% else %}—{% endif %}</dd></li>
+        <li class="detail-row"><dt>Phone</dt><dd>{% if customer.phone %}<a href="tel:{{ customer.phone }}">{{ customer.phone }}</a>{% else %}—{% endif %}</dd></li>
+        <li class="detail-row"><dt>Address</dt><dd>{{ customer.company_address|linebreaksbr|default:"—" }}</dd></li>
+        <li class="detail-row"><dt>Status</dt><dd><span class="status-pill status-pill--{{ customer.status_css }}">{{ customer.get_status_display }}</span></dd></li>
+        <li class="detail-row"><dt>Created by</dt><dd>{% if customer.created_by %}{{ customer.created_by.get_full_name|default:customer.created_by.username }}{% else %}-{% endif %}</dd></li>
+        <li class="detail-row"><dt>Last updated</dt><dd>{{ customer.updated_at|date:"j M Y, H:i" }}</dd></li>
+      </ul>
+    </section>
+
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Internal notes</h2>
+          <p>Visible to staff only.</p>
+        </div>
+      </header>
+      {% if customer.notes %}
+      <div class="enquiry-message">{{ customer.notes|linebreaks }}</div>
+      {% else %}
+      <p class="dash-note">No notes recorded.</p>
+      {% endif %}
+    </section>
+
+    {% if can_delete %}
+    <section class="dash-card dash-card--quiet">
+      <header class="dash-card__head">
+        <div>
+          <h2>Danger zone</h2>
+        </div>
+      </header>
+      <p class="dash-note">Deleting this customer removes the record. Linked enquiries are kept but are no longer associated with a customer.</p>
+      <a class="btn btn--outline btn--sm dash-danger-link" href="{% url 'dashboard:customer_delete' customer.pk %}">Delete customer</a>
+    </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

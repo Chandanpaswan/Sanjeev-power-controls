@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+  <title id="title">Illustrative render of a cylindrical DG set air filter element</title>
+  <desc id="desc">Studio-style illustration of a pleated air filter with metal end caps and a red identification band. Illustrative product visual, not a photograph.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F8FAFC"/>
+      <stop offset="0.55" stop-color="#EEF3F8"/>
+      <stop offset="1" stop-color="#E3EAF2"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#0B1F3A" stroke-opacity="0.045" stroke-width="1"/>
+    </pattern>
+    <pattern id="pleats" width="14" height="24" patternUnits="userSpaceOnUse">
+      <rect width="6" height="24" fill="#F1F5F9"/>
+      <rect x="6" width="7" height="24" fill="#D3DDE7"/>
+      <rect x="13" width="1" height="24" fill="#AEBCCB"/>
+    </pattern>
+    <linearGradient id="cyl" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0B1F3A" stop-opacity="0.26"/>
+      <stop offset="0.16" stop-color="#FFFFFF" stop-opacity="0.05"/>
+      <stop offset="0.46" stop-color="#FFFFFF" stop-opacity="0.5"/>
+      <stop offset="0.72" stop-color="#FFFFFF" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#0B1F3A" stop-opacity="0.24"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F4F7FA"/>
+      <stop offset="0.45" stop-color="#B9C5D2"/>
+      <stop offset="0.55" stop-color="#E8EDF3"/>
+      <stop offset="1" stop-color="#93A2B2"/>
+    </linearGradient>
+    <linearGradient id="cap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1B3A5E"/>
+      <stop offset="0.6" stop-color="#0B1F3A"/>
+      <stop offset="1" stop-color="#07162A"/>
+    </linearGradient>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="200%">
+      <feDropShadow dx="0" dy="20" stdDeviation="20" flood-color="#0B1F3A" flood-opacity="0.2"/>
+    </filter>
+    <clipPath id="bodyClip">
+      <path d="M298 152h204v296a102 28 0 0 1-204 0Z"/>
+    </clipPath>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#grid)"/>
+  <ellipse cx="400" cy="512" rx="235" ry="36" fill="#0B1F3A" opacity="0.09"/>
+
+  <g filter="url(#shadow)">
+    <path d="M298 152h204v296a102 28 0 0 1-204 0Z" fill="url(#pleats)"/>
+    <g clip-path="url(#bodyClip)">
+      <rect x="298" y="152" width="204" height="300" fill="url(#cyl)"/>
+      <rect x="298" y="196" width="204" height="14" fill="#0B1F3A" opacity="0.14"/>
+      <rect x="298" y="404" width="204" height="12" fill="#D92332" opacity="0.92"/>
+      <rect x="298" y="416" width="204" height="2" fill="#0B1F3A" opacity="0.18"/>
+    </g>
+
+    <ellipse cx="400" cy="452" rx="102" ry="28" fill="url(#metal)"/>
+    <ellipse cx="400" cy="449" rx="102" ry="28" fill="url(#cap)"/>
+    <ellipse cx="400" cy="449" rx="73" ry="18" fill="#061426"/>
+    <ellipse cx="400" cy="447" rx="73" ry="17" fill="none" stroke="#2B4F78" stroke-width="1.5"/>
+
+    <ellipse cx="400" cy="152" rx="102" ry="29" fill="url(#metal)"/>
+    <ellipse cx="400" cy="149" rx="102" ry="28" fill="url(#cap)"/>
+    <ellipse cx="400" cy="148" rx="74" ry="18" fill="#061426"/>
+    <ellipse cx="400" cy="146" rx="74" ry="17" fill="none" stroke="#2B4F78" stroke-width="1.5"/>
+    <circle cx="400" cy="146" r="9" fill="#0B1F3A" stroke="#3C628F" stroke-width="2"/>
+    <circle cx="400" cy="146" r="3" fill="#64748B"/>
+
+    <rect x="298" y="176" width="204" height="16" fill="url(#metal)" opacity="0.95"/>
+    <rect x="298" y="176" width="204" height="2" fill="#FFFFFF" opacity="0.6"/>
+    <rect x="298" y="189" width="204" height="3" fill="#0B1F3A" opacity="0.28"/>
+  </g>
+
+  <g opacity="0.85">
+    <rect x="300" y="232" width="6" height="160" rx="3" fill="#FFFFFF" opacity="0.18"/>
+    <rect x="494" y="232" width="6" height="160" rx="3" fill="#0B1F3A" opacity="0.08"/>
+  </g>
+</svg>

@@ -1,0 +1,147 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Navigation menu{% endblock %}
+{% block eyebrow %}Site content{% endblock %}
+{% block page_title %}Navigation menu{% endblock %}
+
+{% block page_actions %}
+{% if perms.cms.add_menuitem %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:menu_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  Add menu item
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ total_count }} menu item{{ total_count|pluralize }}. Header items drive the public site navigation; footer items are used in the footer link column. Only active items are rendered.</p>
+
+<div class="dash-columns">
+  <section class="dash-card dash-card--flush">
+    <header class="dash-card__head">
+      <div>
+        <h2>Header navigation</h2>
+        <p>{{ header_items|length }} item{{ header_items|length|pluralize }} in the main menu.</p>
+      </div>
+    </header>
+    {% if header_items %}
+    <div class="table-wrap">
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th scope="col">Order</th>
+            <th scope="col">Label</th>
+            <th scope="col">Destination</th>
+            <th scope="col">Status</th>
+            <th scope="col" class="ta-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in header_items %}
+          <tr>
+            <td>{{ item.order }}</td>
+            <td><strong>{{ item.label }}</strong>{% if item.open_in_new_tab %}<span class="dash-sub">Opens in a new tab</span>{% endif %}</td>
+            <td><span class="mono">{{ item.resolved_url }}</span></td>
+            <td><span class="status-pill status-pill--{% if item.is_active %}active{% else %}closed{% endif %}">{% if item.is_active %}Active{% else %}Hidden{% endif %}</span></td>
+            <td>
+              <div class="row-actions">
+                {% if perms.cms.change_menuitem %}
+                <form method="post" action="{% url 'dashboard:menu_move' item.pk 'up' %}">
+                  {% csrf_token %}
+                  <button class="icon-btn" type="submit" title="Move up" aria-label="Move {{ item.label }} up" {% if forloop.first %}disabled{% endif %}>
+                    <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-up"></use></svg>
+                  </button>
+                </form>
+                <form method="post" action="{% url 'dashboard:menu_move' item.pk 'down' %}">
+                  {% csrf_token %}
+                  <button class="icon-btn" type="submit" title="Move down" aria-label="Move {{ item.label }} down" {% if forloop.last %}disabled{% endif %}>
+                    <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-down"></use></svg>
+                  </button>
+                </form>
+                <a class="icon-btn" href="{% url 'dashboard:menu_edit' item.pk %}" title="Edit" aria-label="Edit {{ item.label }}">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+                </a>
+                {% endif %}
+                {% if perms.cms.delete_menuitem %}
+                <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:menu_delete' item.pk %}" title="Delete" aria-label="Delete {{ item.label }}">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+                </a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="dash-empty dash-empty--sm">
+      <p>The header menu has no items. The public site falls back to its built-in links.</p>
+      {% if perms.cms.add_menuitem %}
+      <a class="btn btn--primary btn--sm" href="{% url 'dashboard:menu_create' %}">Add menu item</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </section>
+
+  <aside class="dash-columns__side">
+    <section class="dash-card dash-card--flush">
+      <header class="dash-card__head">
+        <div>
+          <h2>Footer links</h2>
+          <p>{{ footer_items|length }} item{{ footer_items|length|pluralize }}.</p>
+        </div>
+      </header>
+      {% if footer_items %}
+      <ul class="menu-order-list">
+        {% for item in footer_items %}
+        <li>
+          <div>
+            <strong>{{ item.label }}</strong>
+            <span class="dash-sub mono">{{ item.resolved_url }}</span>
+          </div>
+          <div class="row-actions">
+            {% if perms.cms.change_menuitem %}
+            <form method="post" action="{% url 'dashboard:menu_move' item.pk 'up' %}">
+              {% csrf_token %}
+              <button class="icon-btn icon-btn--sm" type="submit" title="Move up" aria-label="Move {{ item.label }} up" {% if forloop.first %}disabled{% endif %}>
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-up"></use></svg>
+              </button>
+            </form>
+            <form method="post" action="{% url 'dashboard:menu_move' item.pk 'down' %}">
+              {% csrf_token %}
+              <button class="icon-btn icon-btn--sm" type="submit" title="Move down" aria-label="Move {{ item.label }} down" {% if forloop.last %}disabled{% endif %}>
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-down"></use></svg>
+              </button>
+            </form>
+            <a class="icon-btn icon-btn--sm" href="{% url 'dashboard:menu_edit' item.pk %}" title="Edit" aria-label="Edit {{ item.label }}">
+              <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+            </a>
+            {% endif %}
+            {% if perms.cms.delete_menuitem %}
+            <a class="icon-btn icon-btn--sm icon-btn--danger" href="{% url 'dashboard:menu_delete' item.pk %}" title="Delete" aria-label="Delete {{ item.label }}">
+              <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+            </a>
+            {% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="dash-empty dash-empty--sm">
+        <p>No footer links configured.</p>
+      </div>
+      {% endif %}
+    </section>
+
+    <section class="dash-card dash-card--quiet">
+      <header class="dash-card__head">
+        <div>
+          <h2>How menu links work</h2>
+        </div>
+      </header>
+      <p class="dash-note">Choose a managed route name (for example <span class="mono">core:about</span>) or enter a safe relative path. External links must start with <span class="mono">https://</span>. Invalid destinations are rejected on save.</p>
+    </section>
+  </aside>
+</div>
+{% endblock %}

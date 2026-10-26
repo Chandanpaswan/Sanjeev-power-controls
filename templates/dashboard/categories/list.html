@@ -1,0 +1,82 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Categories{% endblock %}
+{% block eyebrow %}Catalogue{% endblock %}
+{% block page_title %}Categories{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:category_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  Add category
+</a>
+{% endblock %}
+
+{% block content %}
+<p class="dash-lede">{{ categories|length }} categor{{ categories|length|pluralize:"y,ies" }}. A category cannot be deleted while products are assigned to it.</p>
+
+<section class="dash-card dash-card--flush">
+  {% if categories %}
+  <div class="table-wrap">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th scope="col">Category</th>
+          <th scope="col">Slug</th>
+          <th scope="col">Products</th>
+          <th scope="col">Created</th>
+          <th scope="col" class="ta-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in categories %}
+        <tr>
+          <td>
+            <a href="{% url 'dashboard:category_edit' category.pk %}">{{ category.name }}</a>
+            {% if category.description %}<span class="dash-sub">{{ category.description|truncatechars:80 }}</span>{% endif %}
+          </td>
+          <td><span class="mono">{{ category.slug }}</span></td>
+          <td>
+            <span class="status-pill status-pill--{% if category.product_count %}active{% else %}closed{% endif %}">
+              {{ category.product_count }} product{{ category.product_count|pluralize }}
+            </span>
+          </td>
+          <td>{{ category.created_at|date:"j M Y" }}</td>
+          <td>
+            <div class="row-actions">
+              <a class="icon-btn" href="{% url 'products:list' %}?category={{ category.slug }}" target="_blank" rel="noopener" title="View on public site" aria-label="View {{ category.name }} on the public site">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-eye"></use></svg>
+              </a>
+              <a class="icon-btn" href="{% url 'dashboard:category_edit' category.pk %}" title="Edit" aria-label="Edit {{ category.name }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+              </a>
+              {% if category.product_count %}
+              <button class="icon-btn icon-btn--disabled" type="button" disabled title="Reassign products before deleting" aria-label="{{ category.name }} cannot be deleted while it has products">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-lock"></use></svg>
+              </button>
+              {% else %}
+              <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:category_delete' category.pk %}" title="Delete" aria-label="Delete {{ category.name }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-layers"></use></svg>
+    <h3>No categories yet</h3>
+    <p>Create a category before adding products, or load the demo catalogue.</p>
+    <a class="btn btn--primary btn--sm" href="{% url 'dashboard:category_create' %}">Add category</a>
+  </div>
+  {% endif %}
+</section>
+
+<div class="notice">
+  <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+  <p>Safe deletion: categories with products are protected at both the interface and database level (<code>PROTECT</code>), so no product can be left without a category.</p>
+</div>
+{% endblock %}

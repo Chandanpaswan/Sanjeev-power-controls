@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if cms_page.seo_title %}{{ cms_page.seo_title }}{% else %}Quality &amp; Applications &mdash; {{ site_profile.company_name|default:"Sanjeev Power Controls" }}{% endif %}{% endblock %}
+{% block description %}{{ cms_page.seo_description|default:"A proposed component verification workflow and typical DG set application areas. No certifications, approvals or customer installations are claimed in this demo." }}{% endblock %}
+{% block robots %}{% if cms_page.noindex or not site_profile.allow_search_indexing %}noindex,nofollow{% else %}index,follow{% endif %}{% endblock %}
+{% block canonical %}{{ cms_page.canonical_url|default:request.build_absolute_uri }}{% endblock %}
+{% block og_title %}{{ cms_page.seo_title|default:"Quality & Applications" }}{% endblock %}
+{% block og_description %}{{ cms_page.seo_description|default:cms_page.hero_description|default:"Quality and applications" }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'core:home' %}">Home</a></li>
+      <li aria-current="page">Quality &amp; Applications</li>
+    </ol>
+    <p class="eyebrow eyebrow--light">{{ cms_page.hero_eyebrow|default:"Quality & applications" }}</p>
+    <h1>{{ cms_page.hero_heading|default:"Check the part against the requirement." }}</h1>
+    <p class="page-hero__lead">{{ cms_page.hero_description|default:"A proposed workflow for capturing requirements, verifying components and recording the checks performed. Certification, testing capability and approvals remain unverified until the client supplies evidence." }}</p>
+    <div class="page-hero__meta">
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>Proposed workflow</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>No certificates claimed</span>
+      <span><svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>Demo documentation</span>
+    </div>
+  </div>
+</section>
+
+{% if cms_page.body or cms_page.public_sections %}
+{% include "includes/cms_content.html" %}
+{% else %}
+
+<section class="section section--white">
+  <div class="container">
+    <div class="notice notice--warn" data-reveal>
+      <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+      <p><strong>Important:</strong> this page describes a proposed quality approach for demonstration purposes. It does not state that Sanjeev Power Controls holds any certification, approval or accredited test facility. Replace this notice only when verified evidence is provided.</p>
+    </div>
+
+    <div class="section-head section-head--spaced">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">Inspection workflow</p>
+        <h2>Five checkpoints before dispatch.</h2>
+        <p class="lead">The sequence below is editable demo copy. Each step should be confirmed against the real process on site.</p>
+      </div>
+      <div class="section-head__aside" data-reveal>
+        <span class="demo-tag">Proposed</span>
+      </div>
+    </div>
+
+    <ol class="process">
+      <li data-reveal>
+        <span class="process__num">01</span>
+        <h3>Requirement record</h3>
+        <p>Capture part number, engine model, dimensions, quantity and application.</p>
+      </li>
+      <li data-reveal data-reveal-delay="1">
+        <span class="process__num">02</span>
+        <h3>Incoming check</h3>
+        <p>Compare the component and its labelling with the agreed reference.</p>
+      </li>
+      <li data-reveal data-reveal-delay="2">
+        <span class="process__num">03</span>
+        <h3>Dimensional check</h3>
+        <p>Measure critical dimensions where the requirement calls for it.</p>
+      </li>
+      <li data-reveal data-reveal-delay="3">
+        <span class="process__num">04</span>
+        <h3>Fitment confirmation</h3>
+        <p>Re-check the application details before the order is released.</p>
+      </li>
+      <li data-reveal>
+        <span class="process__num">05</span>
+        <h3>Packing review</h3>
+        <p>Confirm quantity, labels and packing condition against the order.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section section--light">
+  <div class="container split">
+    <div class="split__body" data-reveal>
+      <p class="eyebrow">Component verification</p>
+      <h2>What gets checked, and what gets recorded.</h2>
+      <p>A practical inspection record should make it obvious which checks were completed and which details were confirmed with the customer. The demo dashboard stores those details with every product record and enquiry.</p>
+      <ul class="check-list">
+        <li>Part number and reference match</li>
+        <li>Critical dimensions against the agreed specification</li>
+        <li>Visual condition and labelling</li>
+        <li>Quantity and packing contents</li>
+        <li>Customer confirmation for any unresolved fitment question</li>
+        <li>Enquiry reference retained for follow-up</li>
+      </ul>
+      <div class="notice">
+        <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+        <p>The checklist is a proposed structure, not evidence of a certified quality management system.</p>
+      </div>
+    </div>
+    <div class="split__media" data-reveal data-reveal-delay="1">
+      <figure class="split__figure">
+        <picture>
+          <source srcset="{% static 'images/industrial/machining.webp' %}" type="image/webp">
+          <img src="{% static 'images/industrial/machining.jpg' %}" alt="CNC milling machine used for precision component work" width="1200" height="900" loading="lazy" decoding="async">
+        </picture>
+      </figure>
+      <div class="split__badge">
+        <strong>Representative image</strong>
+        <span>Photo: Stilfehler · CC BY-SA 4.0 · not a company facility.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">Documentation</p>
+        <h2>Documents that must be verified before publication.</h2>
+        <p class="lead">These rows are ready for real document names and scopes. Nothing is marked as available in this demo.</p>
+      </div>
+      <div class="section-head__aside" data-reveal>
+        <span class="demo-tag demo-tag--neutral">Awaiting evidence</span>
+      </div>
+    </div>
+
+    <div class="doc-grid">
+      <article class="doc-card" data-reveal>
+        <div class="doc-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg></div>
+        <div>
+          <h3>Material traceability</h3>
+          <p>Scope, issuer and reference format to be confirmed.</p>
+          <span class="demo-tag demo-tag--neutral">Not verified</span>
+        </div>
+      </article>
+      <article class="doc-card" data-reveal data-reveal-delay="1">
+        <div class="doc-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-gauge"></use></svg></div>
+        <div>
+          <h3>Dimensional report</h3>
+          <p>Measurement points and tolerances to be confirmed.</p>
+          <span class="demo-tag demo-tag--neutral">Not verified</span>
+        </div>
+      </article>
+      <article class="doc-card" data-reveal data-reveal-delay="2">
+        <div class="doc-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg></div>
+        <div>
+          <h3>Certificate of conformity</h3>
+          <p>Availability and issuing authority to be confirmed.</p>
+          <span class="demo-tag demo-tag--neutral">Not verified</span>
+        </div>
+      </article>
+      <article class="doc-card" data-reveal data-reveal-delay="3">
+        <div class="doc-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-box"></use></svg></div>
+        <div>
+          <h3>Packing list</h3>
+          <p>Format and included fields to be confirmed.</p>
+          <span class="demo-tag demo-tag--neutral">Not verified</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--light">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-head__copy" data-reveal>
+        <p class="eyebrow">Applications</p>
+        <h2>Typical areas where these parts are used.</h2>
+        <p class="lead">Application examples for discussion. They do not represent verified installations, approvals or customer relationships.</p>
+      </div>
+    </div>
+    <div class="industry-grid">
+      <article class="industry-card" data-reveal>
+        <div class="industry-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-bolt"></use></svg></div>
+        <div><h3>Standby power</h3><p>Generator sets kept ready for grid outages.</p></div>
+      </article>
+      <article class="industry-card" data-reveal>
+        <div class="industry-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-factory"></use></svg></div>
+        <div><h3>Manufacturing</h3><p>Maintenance of production-site generator sets.</p></div>
+      </article>
+      <article class="industry-card" data-reveal>
+        <div class="industry-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-truck"></use></svg></div>
+        <div><h3>Rental and site power</h3><p>Repeat parts references for mobile generator fleets.</p></div>
+      </article>
+      <article class="industry-card" data-reveal>
+        <div class="industry-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-gauge"></use></svg></div>
+        <div><h3>Telecom infrastructure</h3><p>Service items for remotely located generator sets.</p></div>
+      </article>
+      <article class="industry-card" data-reveal>
+        <div class="industry-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-droplet"></use></svg></div>
+        <div><h3>Agricultural pumping</h3><p>Fuel and lubrication parts for diesel pump sets.</p></div>
+      </article>
+      <article class="industry-card" data-reveal>
+        <div class="industry-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-layers"></use></svg></div>
+        <div><h3>Commercial facilities</h3><p>Backup power maintenance for buildings and campuses.</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--white">
+  <div class="container">
+    <div class="cta-banner" data-reveal>
+      <div>
+        <p class="eyebrow eyebrow--light">Verification starts with the enquiry</p>
+        <h2>Send the part number and application.</h2>
+        <p>The enquiry form records the product interest, contact details and message so the requirement can be reviewed and tracked.</p>
+      </div>
+      <div class="cta-banner__actions">
+        <a class="btn btn--light" href="{% url 'core:contact' %}">
+          Request Enquiry
+          <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+        </a>
+        <a class="btn btn--ghost-light" href="{% url 'products:list' %}">Browse products</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

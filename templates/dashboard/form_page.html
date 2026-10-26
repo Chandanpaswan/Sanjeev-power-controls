@@ -1,0 +1,77 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block eyebrow %}{{ eyebrow|default:"Management" }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{{ cancel_url }}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+  Back
+</a>
+{% endblock %}
+
+{% block content %}
+{% if description %}<p class="dash-lede">{{ description }}</p>{% endif %}
+
+<form method="post" class="dash-form dash-form--narrow" {% if form.is_multipart or enctype %}enctype="{{ enctype|default:'multipart/form-data' }}"{% endif %} novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+  <div class="form-status is-visible" role="alert">
+    {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if sections %}
+    {% for section in sections %}
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>{{ section.title }}</h2>
+          {% if section.description %}<p>{{ section.description }}</p>{% endif %}
+        </div>
+      </header>
+      <div class="field-grid">
+        {% for field in section.fields %}
+          {% include "dashboard/includes/field.html" with field=field %}
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+  {% else %}
+  <section class="dash-card">
+    <header class="dash-card__head">
+      <div>
+        <h2>Details</h2>
+        <p>Fields marked with an asterisk are required.</p>
+      </div>
+    </header>
+    <div class="field-grid">
+      {% for field in form %}
+        {% include "dashboard/includes/field.html" with field=field %}
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="dash-form__actions">
+    <button class="btn btn--primary" type="submit">{{ submit_label|default:"Save" }}</button>
+    <a class="btn btn--ghost" href="{{ cancel_url }}">Cancel</a>
+    {% if object and object.pk and object.get_absolute_url and preview_url %}
+    <a class="btn btn--outline" href="{{ preview_url }}" target="_blank" rel="noopener">
+      <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-external"></use></svg>
+      Preview
+    </a>
+    {% endif %}
+    {% if secondary_actions %}
+      {% for action in secondary_actions %}
+      <a class="btn btn--outline" href="{{ action.url }}">
+        {% if action.icon %}<svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{{ action.icon }}"></use></svg>{% endif %}
+        {{ action.label }}
+      </a>
+      {% endfor %}
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% if banners %}
+<section class="banner-section" aria-label="Featured banners">
+  <div class="container">
+    <div class="banner-slider" data-banner-slider>
+      {% for banner in banners %}
+      <article class="banner-slide{% if forloop.first %} is-active{% endif %}" data-banner-slide{% if not forloop.first %} hidden{% endif %}>
+        {% if banner.desktop_url %}
+        <picture class="banner-slide__media">
+          {% if banner.mobile_url %}<source media="(max-width: 640px)" srcset="{{ banner.mobile_url }}">{% endif %}
+          <img src="{{ banner.desktop_url }}" alt="{{ banner.title }}" width="1600" height="620" loading="{% if forloop.first %}eager{% else %}lazy{% endif %}" decoding="async">
+        </picture>
+        {% endif %}
+        <div class="banner-slide__body">
+          <p class="eyebrow eyebrow--light">Featured</p>
+          <h2>{{ banner.heading|default:banner.title }}</h2>
+          {% if banner.description %}<p>{{ banner.description }}</p>{% endif %}
+          {% if banner.cta_text and banner.cta_url %}
+          <a class="btn btn--light" href="{{ banner.cta_url }}"{% if banner.cta_url|slice:":4" == "http" %} target="_blank" rel="noopener"{% endif %}>
+            {{ banner.cta_text }}
+            <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+          </a>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    {% if banners|length > 1 %}
+    <div class="banner-controls">
+      <button class="banner-arrow" type="button" aria-label="Previous banner" data-banner-prev>
+        <svg class="icon" aria-hidden="true"><use href="#icon-chevron-left"></use></svg>
+      </button>
+      <div class="banner-dots" role="tablist" aria-label="Choose a banner">
+        {% for banner in banners %}
+        <button class="banner-dot{% if forloop.first %} is-active{% endif %}" type="button" role="tab" aria-label="Banner {{ forloop.counter }}: {{ banner.title }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" data-banner-dot="{{ forloop.counter0 }}"></button>
+        {% endfor %}
+      </div>
+      <button class="banner-arrow" type="button" aria-label="Next banner" data-banner-next>
+        <svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"></use></svg>
+      </button>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}

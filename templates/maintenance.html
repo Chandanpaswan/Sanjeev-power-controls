@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Temporarily unavailable — {{ site_profile.company_name|default:"Sanjeev Power Controls" }}{% endblock %}
+{% block description %}The website is temporarily unavailable while scheduled maintenance is completed.{% endblock %}
+{% block robots %}noindex,nofollow{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container container--narrow">
+    <p class="eyebrow">Scheduled maintenance</p>
+    <h1>Temporarily unavailable</h1>
+    <p>{{ maintenance_message|default:"The website is temporarily unavailable while scheduled maintenance is completed. Please try again shortly." }}</p>
+    <p class="muted">Staff can still sign in at <a href="{% url 'dashboard:login' %}">the dashboard</a>.</p>
+  </div>
+</section>
+{% endblock %}
