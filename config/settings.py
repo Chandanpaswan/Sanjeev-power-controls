@@ -12,7 +12,10 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# `.env` is the local development file. `.env.local` is written by the Vercel
+# and Neon CLIs; existing environment variables always win over both.
 load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR / ".env.local")
 
 
 def env(name, default=""):

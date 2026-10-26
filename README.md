@@ -369,6 +369,34 @@ vercel link --yes
 vercel --prod
 ```
 
+### Neon Postgres
+
+The project is wired to a Neon project through `neon.ts` and the Neon CLI. The
+CLI writes the connection strings to `.env.local`, which `config/settings.py`
+loads after `.env` (real environment variables still win over both files).
+
+| Variable | Use |
+| --- | --- |
+| `DATABASE_URL` | Pooled connection string. This is what the app uses at runtime. |
+| `DATABASE_URL_UNPOOLED` | Direct connection string. Use it for migrations, seeding and other DDL. |
+
+Two connection settings are applied whenever `DATABASE_URL` is set:
+`DISABLE_SERVER_SIDE_CURSORS=True`, because the pooled endpoint runs PgBouncer
+in transaction mode, and `CONN_MAX_AGE=60` with health checks so serverless
+instances reuse connections.
+
+Neon CLI workflow:
+
+```bash
+neon init -y --services postgres   # link the project, install skills, write neon.ts
+neon deploy                        # apply branch policy, pull DATABASE_URL* into .env.local
+```
+
+`npm run build` runs the Django system check and `collectstatic`, matching what
+Vercel executes: `python manage.py check && python manage.py collectstatic --noinput`.
+Run it before deploying to catch settings errors that would otherwise appear
+only in the build log.
+
 ### Temporary preview without Postgres
 
 When no database is available yet, the Vercel project can run on an ephemeral

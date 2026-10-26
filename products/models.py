@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from django.db import models
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.text import slugify
 
@@ -120,7 +123,18 @@ class Product(models.Model):
     def display_image_url(self):
         if self.image_asset and self.image_asset.file:
             return self.image_asset.file.url
-        return self.image.url if self.image else ""
+        if not self.image:
+            return ""
+        name = self.image.name
+        # Demo fixtures also ship in static/, so preview deployments without
+        # persistent upload storage still render the catalogue images.
+        if name.startswith("products/demo-"):
+            try:
+                if not self.image.storage.exists(name):
+                    return static(f"images/products/demo/{Path(name).name}")
+            except Exception:
+                return static(f"images/products/demo/{Path(name).name}")
+        return self.image.url
 
     @property
     def display_alt(self):
