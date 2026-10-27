@@ -7,9 +7,9 @@ from __future__ import annotations
 
 from functools import wraps
 
-from django.conf import settings
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied
+from django.urls import reverse
 
 
 def _authenticated_staff(request) -> bool:
@@ -25,7 +25,7 @@ def email_manager_access(*permissions: str):
         def wrapper(request, *args, **kwargs):
             if not _authenticated_staff(request):
                 return redirect_to_login(
-                    request.get_full_path(), settings.LOGIN_URL
+                    request.get_full_path(), reverse("dashboard:login")
                 )
             user = request.user
             if permissions and not any(
@@ -45,7 +45,7 @@ def smtp_admin_required(view):
     @wraps(view)
     def wrapper(request, *args, **kwargs):
         if not _authenticated_staff(request):
-            return redirect_to_login(request.get_full_path(), settings.LOGIN_URL)
+            return redirect_to_login(request.get_full_path(), reverse("dashboard:login"))
         user = request.user
         if not (
             user.is_superuser
