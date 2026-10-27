@@ -5,7 +5,14 @@ from .models import ActivityLog, Notification, SiteSettings
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ("company_name", "contact_email", "contact_phone", "updated_at")
+    list_display = (
+        "company_name",
+        "whatsapp_number",
+        "city",
+        "state",
+        "country",
+        "updated_at",
+    )
     readonly_fields = ("updated_at",)
 
     def has_add_permission(self, request):

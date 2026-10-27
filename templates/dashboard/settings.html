@@ -172,7 +172,7 @@
             <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{% if site.has_whatsapp %}check{% else %}close{% endif %}"></use></svg>
           </span>
           WhatsApp
-          <span class="dash-sub">{% if site.has_whatsapp %}{{ site.whatsapp_number }}{% else %}Not configured{% endif %}</span>
+          <span class="dash-sub">{% if site.has_whatsapp %}{{ site.whatsapp_display }}{% else %}Not configured{% endif %}</span>
         </li>
         <li>
           <span class="check-status {% if site.address_lines %}is-done{% endif %}">

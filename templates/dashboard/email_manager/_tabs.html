@@ -1,0 +1,38 @@
+{% if request.user.is_superuser or perms.email_manager.view_emaillog or perms.email_manager.view_emailtemplate or perms.email_manager.manage_smtp %}
+<nav class="settings-tabs" aria-label="Email manager sections">
+  {% if request.user.is_superuser or perms.email_manager.view_emaillog or perms.email_manager.view_emailtemplate or perms.email_manager.manage_smtp %}
+  <a class="settings-tab{% if active_tab == 'overview' %} is-active{% endif %}" href="{% url 'dashboard:email_overview' %}">
+    <strong>Email Overview</strong>
+    <span>Delivery activity at a glance</span>
+  </a>
+  {% endif %}
+  {% if request.user.is_superuser or perms.email_manager.manage_smtp %}
+  <a class="settings-tab{% if active_tab == 'smtp' %} is-active{% endif %}" href="{% url 'dashboard:email_smtp_settings' %}">
+    <strong>SMTP Settings</strong>
+    <span>Credentials and security</span>
+  </a>
+  <a class="settings-tab{% if active_tab == 'test' %} is-active{% endif %}" href="{% url 'dashboard:email_test' %}">
+    <strong>Test Email</strong>
+    <span>Verify real delivery</span>
+  </a>
+  {% endif %}
+  {% if request.user.is_superuser or perms.email_manager.view_emailtemplate %}
+  <a class="settings-tab{% if active_tab == 'templates' %} is-active{% endif %}" href="{% url 'dashboard:email_template_list' %}">
+    <strong>Email Templates</strong>
+    <span>Reusable message content</span>
+  </a>
+  {% endif %}
+  {% if request.user.is_superuser or perms.email_manager.view_emaillog %}
+  <a class="settings-tab{% if active_tab == 'logs' %} is-active{% endif %}" href="{% url 'dashboard:email_log_list' %}">
+    <strong>Email Logs</strong>
+    <span>Delivery history and retries</span>
+  </a>
+  {% endif %}
+  {% if request.user.is_superuser or perms.email_manager.view_notificationrule %}
+  <a class="settings-tab{% if active_tab == 'rules' %} is-active{% endif %}" href="{% url 'dashboard:email_rules' %}">
+    <strong>Notification Rules</strong>
+    <span>Choose which events send mail</span>
+  </a>
+  {% endif %}
+</nav>
+{% endif %}

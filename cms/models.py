@@ -516,5 +516,5 @@ class RedirectRule(models.Model):
         for value, label in ((self.old_path, "Old path"), (self.new_path, "New path")):
             if value and not value.startswith(("/", "http://", "https://")):
                 raise ValidationError({("old_path" if label == "Old path" else "new_path"): "Enter a path beginning with / or a full URL."})
-        if self.old_path.startswith(("/admin-panel", "/django-admin")):
+        if self.old_path.startswith(("/admin/", "/django-admin")):
             raise ValidationError({"old_path": "Administration paths cannot be redirected."})

@@ -179,7 +179,7 @@ def robots_txt(request):
     lines = [
         "User-agent: *",
         "Allow: /",
-        "Disallow: /admin-panel/",
+        "Disallow: /admin/",
         "Disallow: /django-admin/",
         "Disallow: /enquiries/",
         "",

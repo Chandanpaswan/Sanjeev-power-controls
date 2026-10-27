@@ -1,0 +1,101 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Notification rules{% endblock %}
+{% block eyebrow %}Email manager{% endblock %}
+{% block page_title %}Notification rules{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:email_template_list' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-file"></use></svg>
+  Email templates
+</a>
+{% endblock %}
+
+{% block content %}
+{% include "dashboard/email_manager/_tabs.html" %}
+
+<p class="dash-lede">{{ enabled_count }} of {{ rule_count }} rules are enabled. A rule only sends email when it is enabled, its template is active, outgoing email is enabled in SMTP settings, and the SMTP configuration is complete.</p>
+
+<div class="notice notice--warn">
+  <svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
+  <p><strong>Recipients are fixed by event.</strong> Customer acknowledgements only go to the enquiry's email address, internal alerts only go to the configured administrator, and assignment alerts only go to the assigned staff member. Saving a rule cannot redirect customer data to an arbitrary address.</p>
+</div>
+
+<div class="email-rule-list">
+  {% for row in rows %}
+  <form method="post" action="{% url 'dashboard:email_rule_update' row.rule.pk %}" class="dash-card email-rule" id="rule-{{ row.rule.pk }}">
+    {% csrf_token %}
+    <header class="dash-card__head">
+      <div>
+        <h2>{{ row.rule.get_event_display }}</h2>
+        <p>{{ row.rule.description|default:"No description." }}</p>
+      </div>
+      <span class="status-pill status-pill--{% if row.rule.is_enabled %}active{% else %}closed{% endif %}">
+        {% if row.rule.is_enabled %}Enabled{% else %}Disabled{% endif %}
+      </span>
+    </header>
+
+    <div class="email-rule__meta">
+      <span class="email-rule__recipient">
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-users"></use></svg>
+        <span><strong>Recipient</strong>{{ row.rule.get_recipient_display }}</span>
+      </span>
+      <span class="email-rule__template">
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-file"></use></svg>
+        <span><strong>Current template</strong>{{ row.rule.template.name }}{% if not row.rule.template.is_active %} (inactive){% endif %}</span>
+      </span>
+    </div>
+
+    <div class="field-grid">
+      <div class="field{% if row.form.template.errors %} has-error{% endif %}">
+        <label for="{{ row.form.template.id_for_label }}">Email template</label>
+        {{ row.form.template }}
+        <span class="hint">{{ row.form.template.help_text }}</span>
+        {% for error in row.form.template.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="check-field{% if row.form.is_enabled.errors %} has-error{% endif %}">
+        <label class="form-check">
+          {{ row.form.is_enabled }}
+          <span class="form-check-label">
+            <strong>Rule enabled</strong>
+            <span>Send email automatically when this event occurs.</span>
+          </span>
+        </label>
+        {% for error in row.form.is_enabled.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+    </div>
+
+    <div class="dash-form__actions">
+      {% if request.user.is_superuser or perms.email_manager.change_notificationrule %}
+      <button class="btn btn--outline btn--sm" type="submit">Save rule</button>
+      {% else %}
+      <span class="dash-sub">Your account can view but not change notification rules.</span>
+      {% endif %}
+    </div>
+  </form>
+  {% empty %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+    <h3>No notification rules</h3>
+    <p>Run <code>python manage.py seed_email_manager</code> to create the default rules.</p>
+  </div>
+  {% endfor %}
+</div>
+
+<section class="dash-card dash-card--quiet">
+  <header class="dash-card__head">
+    <div>
+      <h2>Event reference</h2>
+      <p>How each rule is triggered.</p>
+    </div>
+  </header>
+  <dl class="detail-list detail-list--compact">
+    <div class="detail-row"><dt>New enquiry</dt><dd>After the public enquiry form is validated and saved. The customer acknowledgement and the internal notification are separate rules.</dd></div>
+    <div class="detail-row"><dt>Product enquiry</dt><dd>Used instead of the general internal notification when the enquiry names a product.</dd></div>
+    <div class="detail-row"><dt>Lead assigned</dt><dd>Sent when a staff member is assigned to an enquiry in the dashboard.</dd></div>
+    <div class="detail-row"><dt>Status changed</dt><dd>Sent when the enquiry status changes. The previous and new labels are included.</dd></div>
+    <div class="detail-row"><dt>Follow-up due</dt><dd>Sent by <code>python manage.py send_follow_up_reminders</code> for open enquiries whose follow-up date has arrived. Schedule it with cron or your platform scheduler.</dd></div>
+    <div class="detail-row"><dt>Password reset</dt><dd>Uses Django's secure, single-use reset token. The link is generated by Django and is never stored in a template.</dd></div>
+  </dl>
+</section>
+{% endblock %}

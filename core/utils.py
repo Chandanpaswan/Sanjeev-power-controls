@@ -79,7 +79,7 @@ def today():
     return timezone.localdate()
 
 
-def safe_next_url(value, fallback="/admin-panel/"):
+def safe_next_url(value, fallback="/admin/"):
     """Only allow same-site relative redirects after authentication."""
     if not value:
         return fallback
@@ -100,7 +100,7 @@ def human_size(size):
 
 def slug_is_reserved(value):
     return value.strip("/").lower() in {
-        "admin-panel",
+        "admin",
         "django-admin",
         "media",
         "static",

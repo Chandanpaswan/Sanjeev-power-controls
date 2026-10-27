@@ -40,31 +40,35 @@ Tagline: **Powering Performance. Ensuring Reliability.**
   data built only from stored fields, custom 404 and 500 pages, and a clear demo banner.
 - Accessible enquiry form with CSRF protection, server-side validation, consent and a
   honeypot field. Submissions are saved to SQLite and receive a reference such as `SPC-4A19C2`.
-- The site does **not** send email or WhatsApp messages. Staff follow up manually.
+- Optional email notifications through the dashboard Email Manager: customer acknowledgement,
+  internal lead alerts, product-enquiry details and contact-form confirmation. The enquiry is
+  always saved first, so an SMTP failure never loses a submission.
+- WhatsApp is not automated. Staff follow up manually.
 
 ### Staff dashboard
 
 | Area | URL |
 | --- | --- |
-| Sign in | `/admin-panel/login/` |
-| Overview | `/admin-panel/` |
-| Global search | `/admin-panel/search/` |
-| Products | `/admin-panel/products/` |
-| Categories | `/admin-panel/categories/` |
-| Enquiries | `/admin-panel/enquiries/` |
-| Customers | `/admin-panel/customers/` |
-| Website pages | `/admin-panel/pages/` |
-| Blog & blog categories | `/admin-panel/blog/` |
-| Media library | `/admin-panel/media/` |
-| Testimonials / FAQs / banners | `/admin-panel/testimonials/`, `/admin-panel/faqs/`, `/admin-panel/banners/` |
-| Navigation menus | `/admin-panel/navigation/` |
-| Website settings | `/admin-panel/settings/company/` (also contact, social, SEO, general) |
-| Staff & roles | `/admin-panel/staff/`, `/admin-panel/roles/` |
-| Notifications | `/admin-panel/notifications/` |
-| Reports | `/admin-panel/reports/` |
-| Activity log | `/admin-panel/activity/` |
-| Backups | `/admin-panel/backup/` |
-| My profile | `/admin-panel/profile/` |
+| Sign in | `/admin/login/` |
+| Overview | `/admin/` |
+| Global search | `/admin/search/` |
+| Products | `/admin/products/` |
+| Categories | `/admin/categories/` |
+| Enquiries | `/admin/enquiries/` |
+| Customers | `/admin/customers/` |
+| Email Manager | `/admin/email-manager/` (SMTP, test email, templates, logs, rules) |
+| Website pages | `/admin/pages/` |
+| Blog & blog categories | `/admin/blog/` |
+| Media library | `/admin/media/` |
+| Testimonials / FAQs / banners | `/admin/testimonials/`, `/admin/faqs/`, `/admin/banners/` |
+| Navigation menus | `/admin/navigation/` |
+| Website settings | `/admin/settings/company/` (also contact, social, SEO, general) |
+| Staff & roles | `/admin/staff/`, `/admin/roles/` |
+| Notifications | `/admin/notifications/` |
+| Reports | `/admin/reports/` |
+| Activity log | `/admin/activity/` |
+| Backups | `/admin/backup/` |
+| My profile | `/admin/profile/` |
 | Django admin | `/django-admin/` |
 
 - Dashboard statistics are calculated from the database, never hardcoded.
@@ -73,7 +77,12 @@ Tagline: **Powering Performance. Ensuring Reliability.**
 - Protected categories: a category with products cannot be deleted until its products are
   reassigned or removed. Categories without products can be deleted after confirmation.
 - Enquiry workflow: text search, status/priority/date filters, pagination, CSV export, detail
-  view, private notes, status changes, customer conversion and deletion with confirmation.
+  view, private notes, assignment, priority, follow-up dates, status changes, customer
+  conversion and deletion with confirmation.
+- Email Manager: encrypted SMTP credentials with Gmail/Microsoft 365 presets, real connection
+  tests and test emails, editable HTML/plain-text templates with approved placeholders only,
+  event-based notification rules, searchable logs with sanitised errors and safe retries.
+  See [`docs/email-manager.md`](docs/email-manager.md).
 - Customer records with list/detail/edit/delete, CSV export and linked enquiries.
 - Managed pages with sections, blog posts with categories/tags, media library, testimonials,
   FAQs, banners and drag-order navigation menus.
@@ -85,8 +94,9 @@ Tagline: **Powering Performance. Ensuring Reliability.**
 - Superuser-only database backups (SQLite copy or JSON dump) with download and delete.
 - Login lockout after repeated failures, CSRF protection, POST-only destructive actions and
   a `noindex` dashboard.
-- Password reset flow for staff; with the default console email backend the reset link is
-  printed to the server console instead of being sent.
+- Password reset flow for staff. With a configured Email Manager template it sends through the
+  configured SMTP account and appears in Email Logs; otherwise Django's standard reset email is
+  used (printed to the console with the default console backend).
 
 ---
 
@@ -97,6 +107,7 @@ Tagline: **Powering Performance. Ensuring Reliability.**
 - SQLite (PostgreSQL is configurable through environment variables)
 - Django ORM and MVT templates
 - Pillow for image validation/upload
+- `cryptography` (Fernet) for encrypting stored SMTP passwords
 - Bootstrap 5.3.3 (vendored locally), custom CSS and vanilla JavaScript
 - `python-dotenv` for local environment configuration
 
@@ -109,6 +120,7 @@ config/                 Django project settings, URLs, WSGI/ASGI
 core/                   Public core pages, SiteSettings, dashboard, staff auth, reports, backups
 products/               Category/Product models, public catalogue, dashboard CRUD
 enquiries/              Enquiry/Customer models, public submission, sales workflow
+email_manager/          SMTP settings, templates, notification rules, email logs and delivery
 cms/                    Pages, blog, media, testimonials, FAQs, banners, navigation, redirects
 templates/              Public and dashboard templates
 static/                 CSS, JS, fonts, branding, photography and demo product renders
@@ -143,6 +155,7 @@ python manage.py migrate
 
 # 5. Load demo categories, products, pages, menus and the standard roles
 python manage.py seed_demo
+python manage.py seed_email_manager
 
 # 6. Create your own dashboard superuser
 python manage.py createsuperuser
@@ -152,7 +165,7 @@ python manage.py runserver
 ```
 
 Open <http://127.0.0.1:8000/>. The dashboard is at
-<http://127.0.0.1:8000/admin-panel/login/>.
+<http://127.0.0.1:8000/admin/login/>.
 
 If PowerShell blocks the activation script, run:
 
@@ -243,12 +256,25 @@ Copy `.env.example` to `.env`. Never commit `.env`.
 | `SERVE_MEDIA` | `True` streams uploads through Django when no object storage is configured. Defaults to `DJANGO_DEBUG`. |
 | `DJANGO_AUTO_SETUP` | `True` migrates and seeds demo data on first boot. Only for ephemeral previews. |
 | `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_PASSWORD`, `DJANGO_SUPERUSER_EMAIL` | Preview account created by `DJANGO_AUTO_SETUP` when it does not exist. |
-| `EMAIL_BACKEND`, `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | Optional future email delivery. No enquiry emails are sent by this build. |
+| `EMAIL_BACKEND`, `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | Used when `EMAIL_MANAGER_TRANSPORT=django` (tests, environment-only deployments). |
+| `EMAIL_USE_TLS`, `EMAIL_USE_SSL`, `EMAIL_TIMEOUT` | Encryption mode and timeout for the `django` transport. The dashboard SMTP settings have their own equivalents. |
+| `DEFAULT_FROM_EMAIL`, `ADMIN_NOTIFICATION_EMAIL` | Fallback sender address and internal alert recipient when the dashboard configuration leaves them blank. |
+| `EMAIL_ENCRYPTION_KEY` | **Required in production.** Encrypts SMTP passwords stored by the Email Manager. Generate with `Fernet.generate_key()`. |
+| `EMAIL_MANAGER_TRANSPORT` | `database` (default, uses dashboard SMTP settings) or `django` (uses `EMAIL_BACKEND`). |
+| `EMAIL_MANAGER_MAX_ATTEMPTS`, `EMAIL_MANAGER_AUTO_RETRIES`, `EMAIL_MANAGER_RETRY_DELAY` | Delivery attempt limits and delay between automatic retries. |
+| `EMAIL_LOG_RETENTION_DAYS` | Days before `prune_email_logs` can delete old records. Defaults to 180. |
+| `SITE_BASE_URL` | Public HTTPS origin used for links in emails sent by management commands. |
 
 Generate a production secret key:
 
 ```bash
 python -c "from django.core.management.utils import get_random_secret_key as k; print(k())"
+```
+
+Generate the SMTP encryption key:
+
+```bash
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 ```
 
 ---
@@ -279,6 +305,14 @@ placeholder such as “Contact details to be confirmed” until a verified value
   permissions server-side.
 - Five roles map to Django groups; role changes are applied through server-side forms.
 - Passwords are hashed by Django. No plaintext password is stored in the repository or page.
+- SMTP passwords entered in the dashboard are encrypted with Fernet using
+  `EMAIL_ENCRYPTION_KEY`; only ciphertext is stored and the edit form shows a mask. The key
+  must live outside the database and repository. Dashboard email logs never contain passwords,
+  reset tokens or full message bodies.
+- Email templates accept only approved placeholders and filters; `{% ... %}` tags and `|safe`
+  are rejected, customer values are HTML-escaped and rendered HTML is sanitised.
+- Every Email Manager route checks Django permissions server-side; SMTP settings require
+  `email_manager.manage_smtp` (or superuser). CSRF protection applies to every POST.
 - CSRF protection is enabled. Deletes and status toggles are POST-only and require confirmation.
 - Uploads are restricted to JPG, PNG, WebP or GIF, with a 3 MB form limit and additional
   content-type/extension checks.
@@ -312,12 +346,16 @@ data.
 5. Serve `/static/` from the web server or CDN. Serve `/media/` only after configuring upload
    storage and access controls.
 6. Put TLS in front of the site and set `USE_X_FORWARDED_PROTO=True` if the proxy terminates TLS.
-7. Configure real email delivery if staff should receive password-reset links by email;
-   otherwise the console backend prints them to the server log.
-8. Set `BACKUP_DIR` to a private location outside the web root and schedule off-server copies.
-9. Create a real superuser and remove any demo accounts before launch.
-10. Back up the database and uploaded media on a schedule. Test restoring the backup.
-11. Replace all demo content and verify every product claim.
+7. Configure real email delivery in **Email Manager → SMTP Settings**, run **Test connection**
+   and **Send test email**, then enable outgoing email and the notification rules you want. Set
+   `EMAIL_ENCRYPTION_KEY` and `SITE_BASE_URL` first. See [`docs/email-manager.md`](docs/email-manager.md).
+   If you skip this, staff password-reset links are printed to the server log.
+8. Schedule `send_follow_up_reminders` (daily) and `prune_email_logs` (weekly) if those features
+   are enabled.
+9. Set `BACKUP_DIR` to a private location outside the web root and schedule off-server copies.
+10. Create a real superuser and remove any demo accounts before launch.
+11. Back up the database and uploaded media on a schedule. Test restoring the backup.
+12. Replace all demo content and verify every product claim.
 
 Suggested production commands:
 
@@ -434,7 +472,9 @@ python manage.py check
 python manage.py makemigrations --check --dry-run
 python manage.py migrate
 python manage.py seed_demo
+python manage.py seed_email_manager
 python manage.py setup_roles
+python manage.py test
 ```
 
 Manual review checklist:
@@ -447,6 +487,8 @@ Manual review checklist:
 - Pages, blog, media, testimonials, FAQs, banners and navigation management.
 - Staff accounts and role permissions (for example, a Viewer cannot edit records).
 - Reports, activity log and a superuser-only backup create/download/delete cycle.
+- Email Manager: SMTP validation, connection test, test email, template preview, log filters and
+  a read-only user seeing no SMTP controls.
 - 404 page, dynamic sitemap, robots file and maintenance mode.
 - Mobile layout and keyboard navigation.
 

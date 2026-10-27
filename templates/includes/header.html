@@ -33,6 +33,33 @@
       <a href="{% url 'blog:list' %}" {% if request.resolver_match.namespace == 'blog' %}aria-current="page"{% endif %}>Blog</a>
       <a href="{% url 'core:contact' %}" {% if request.resolver_match.url_name == 'contact' %}aria-current="page"{% endif %}>Contact Us</a>
       {% endif %}
+      {% if request.user.is_authenticated %}
+        <div class="nav-dropdown" data-account-dropdown>
+          <a href="#" class="dropdown-toggle" role="button" aria-expanded="false" aria-haspopup="true" data-account-toggle>My Account</a>
+          <div class="dropdown-menu" data-account-menu>
+            <a href="{% url 'accounts:customer_dashboard' %}">My Dashboard</a>
+            <a href="{% url 'accounts:customer_profile' %}">My Profile</a>
+            <a href="{% url 'accounts:customer_enquiries' %}">My Enquiries</a>
+            <a href="{% url 'accounts:customer_settings' %}">Change Password</a>
+            {% if request.user.seller_profile and request.user.seller_profile.approval_status == 'approved' %}
+            <a href="{% url 'accounts:seller_dashboard' %}">Seller Dashboard</a>
+            {% endif %}
+            <form method="post" action="{% url 'accounts:logout' %}">
+              {% csrf_token %}
+              <button type="submit">Logout</button>
+            </form>
+          </div>
+        </div>
+      {% else %}
+      <a href="{% url 'accounts:login' %}">Login</a>
+      <a href="{% url 'accounts:register' %}">Register</a>
+      {% endif %}
+      {% if site_profile.has_whatsapp %}
+      <a class="btn btn--whatsapp nav-cta nav-whatsapp" href="{{ site_profile.whatsapp_enquiry_link }}" target="_blank" rel="noopener">
+        <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+        Enquire on WhatsApp
+      </a>
+      {% endif %}
       <a class="btn btn--primary nav-cta" href="{% url 'core:contact' %}">
         Request Enquiry
         <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
@@ -40,6 +67,12 @@
     </nav>
 
     <div class="header-actions">
+      {% if site_profile.has_whatsapp %}
+      <a class="btn btn--whatsapp" href="{{ site_profile.whatsapp_enquiry_link }}" target="_blank" rel="noopener" aria-label="Enquire on WhatsApp at {{ site_profile.whatsapp_display }}">
+        <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+        <span class="header-whatsapp__label">WhatsApp Us</span>
+      </a>
+      {% endif %}
       <a class="btn btn--primary" href="{% url 'core:contact' %}">
         Request Enquiry
         <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>

@@ -12,10 +12,11 @@ admin.site.index_title = "Database administration"
 
 urlpatterns = [
     path("", include("core.urls")),
+    path("admin/", include("core.urls_dashboard")),
+    path("", include("accounts.urls")),
     path("products/", include("products.urls")),
     path("enquiries/", include("enquiries.urls")),
     path("blog/", include("cms.urls_public")),
-    path("admin-panel/", include("core.urls_dashboard")),
     path("django-admin/", admin.site.urls),
     # Generic managed-page route. Kept last so products, blog, dashboard and
     # the dedicated core routes always win.

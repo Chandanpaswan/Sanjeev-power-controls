@@ -46,7 +46,7 @@
     var overlay = $('[data-nav-overlay]');
     if (!toggle || !nav) return;
 
-    var mq = window.matchMedia('(max-width: 960px)');
+    var mq = window.matchMedia('(max-width: 1200px)');
 
     function focusables() {
       return $$('a[href], button:not([disabled]), input, select, textarea', nav)
@@ -84,6 +84,7 @@
     if (overlay) overlay.addEventListener('click', function () { closeNav(); });
 
     $$('a', nav).forEach(function (link) {
+      if (link.hasAttribute('data-account-toggle')) return;
       link.addEventListener('click', function () { closeNav(false); });
     });
 
@@ -111,6 +112,41 @@
     } else if (mq.addListener) {
       mq.addListener(onChange);
     }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Account dropdown                                                   */
+  /* ------------------------------------------------------------------ */
+  function initAccountDropdown() {
+    var wrap = $('[data-account-dropdown]');
+    var toggle = $('[data-account-toggle]');
+    var menu = $('[data-account-menu]');
+    if (!wrap || !toggle || !menu) return;
+
+    function close() {
+      wrap.classList.remove('is-open');
+      menu.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    toggle.addEventListener('click', function (event) {
+      event.preventDefault();
+      var open = menu.classList.toggle('is-open');
+      wrap.classList.toggle('is-open', open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!wrap.contains(event.target)) close();
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') close();
+    });
+
+    $$('a, button', menu).forEach(function (el) {
+      el.addEventListener('click', close);
+    });
   }
 
   /* ------------------------------------------------------------------ */
@@ -196,6 +232,40 @@
     button.addEventListener('click', function () {
       window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
     });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Floating WhatsApp button                                            */
+  /* ------------------------------------------------------------------ */
+  function initWhatsAppFloat() {
+    var button = $('.whatsapp-float');
+    var footer = $('.site-footer');
+    if (!button || !footer) return;
+
+    // Tuck the fixed button away while the footer is on screen so it never
+    // covers contact details or legal links.
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          button.classList.toggle('is-hidden', entry.isIntersecting);
+        });
+      }, { rootMargin: '0px 0px -24px 0px', threshold: 0.01 });
+      observer.observe(footer);
+      return;
+    }
+
+    var lastState = null;
+    function onScroll() {
+      var rect = footer.getBoundingClientRect();
+      var hide = rect.top < window.innerHeight - 24;
+      if (hide !== lastState) {
+        button.classList.toggle('is-hidden', hide);
+        lastState = hide;
+      }
+    }
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
   }
 
   /* ------------------------------------------------------------------ */
@@ -336,10 +406,12 @@
   function boot() {
     initHeaderScroll();
     initMobileNav();
+    initAccountDropdown();
     initDemoBar();
     initBannerSlider();
     initReveal();
     initBackToTop();
+    initWhatsAppFloat();
     initSearchClear();
     initFormStates();
   }

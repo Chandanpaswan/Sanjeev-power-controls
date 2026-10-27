@@ -72,7 +72,7 @@
       <header class="dash-card__head">
         <div>
           <h2>Follow-up</h2>
-          <p>Update the status and keep a private internal note.</p>
+          <p>Assign the lead, set a priority and keep a private internal note.</p>
         </div>
       </header>
 
@@ -93,6 +93,26 @@
             {% for error in form.status.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
           </div>
 
+          <div class="field{% if form.priority.errors %} has-error{% endif %}">
+            <label for="{{ form.priority.id_for_label }}">Priority</label>
+            {{ form.priority }}
+            {% for error in form.priority.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+
+          <div class="field{% if form.assigned_to.errors %} has-error{% endif %}">
+            <label for="{{ form.assigned_to.id_for_label }}">Assigned staff member</label>
+            {{ form.assigned_to }}
+            <span class="hint">The assignee receives an email when assignment alerts are enabled.</span>
+            {% for error in form.assigned_to.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+
+          <div class="field{% if form.follow_up_date.errors %} has-error{% endif %}">
+            <label for="{{ form.follow_up_date.id_for_label }}">Follow-up due</label>
+            {{ form.follow_up_date }}
+            <span class="hint">A daily command can email a reminder when this date arrives.</span>
+            {% for error in form.follow_up_date.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+
           <div class="field field--full{% if form.internal_notes.errors %} has-error{% endif %}">
             <label for="{{ form.internal_notes.id_for_label }}">Internal notes</label>
             {{ form.internal_notes }}
@@ -109,10 +129,61 @@
       {% else %}
       <div class="notice notice--warn">
         <svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
-        <p>Your account can view this enquiry but does not have permission to change its status or notes.</p>
+        <p>Your account can view this enquiry but does not have permission to change its status, assignment or notes.</p>
       </div>
       {% endif %}
     </section>
+
+    {% if can_view_email_logs %}
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Email history</h2>
+          <p>Notification attempts linked to this enquiry. Bodies and credentials are never stored.</p>
+        </div>
+        <a class="link-arrow" href="{% url 'dashboard:email_log_list' %}?q={{ enquiry.reference|urlencode }}">All logs</a>
+      </header>
+
+      {% if email_logs %}
+      <div class="table-wrap">
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th scope="col">When</th>
+              <th scope="col">Recipient</th>
+              <th scope="col">Event</th>
+              <th scope="col">Status</th>
+              <th scope="col">Attempts</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in email_logs %}
+            <tr>
+              <td>{{ log.created_at|date:"j M Y" }}<span class="dash-sub">{{ log.created_at|date:"H:i" }}</span></td>
+              <td>{{ log.recipient }}{% if log.template_name %}<span class="dash-sub">{{ log.template_name }}</span>{% endif %}</td>
+              <td>{{ log.event_label|default:"—" }}</td>
+              <td><span class="status-pill status-pill--{{ log.status_css }}">{{ log.get_status_display }}</span></td>
+              <td>{{ log.attempts }}</td>
+              <td>
+                <a class="icon-btn" href="{% url 'dashboard:email_log_detail' log.pk %}" title="View log" aria-label="View email log {{ log.pk }}">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-eye"></use></svg>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="dash-empty dash-empty--sm">
+        <svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
+        <h3>No emails for this enquiry</h3>
+        <p>{% if can_manage_smtp %}Notifications appear here once outgoing email is enabled and configured.{% else %}Email attempts will be listed here once notifications are enabled.{% endif %}</p>
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
   </div>
 
   <aside class="dash-columns__side">
@@ -134,7 +205,7 @@
       <header class="dash-card__head">
         <div>
           <h2>Respond</h2>
-          <p>No email delivery is configured in this demo.</p>
+          <p>Contact the enquirer directly from your own mail or phone app.</p>
         </div>
       </header>
       <div class="stack-actions">
@@ -146,11 +217,28 @@
           <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-phone"></use></svg>
           Call the enquirer
         </a>
+        {% if can_view_email_logs %}
+        <a class="btn btn--ghost btn--block btn--sm" href="{% url 'dashboard:email_log_list' %}?q={{ enquiry.reference|urlencode }}">
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-clock"></use></svg>
+          View email history
+        </a>
+        {% endif %}
       </div>
       <div class="notice notice--compact">
         <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
-        <p>These links open your own email client or phone app. The website does not send messages automatically.</p>
+        <p>These links open your own email client or phone app. Automatic acknowledgements are configured in the Email Manager.</p>
       </div>
+    </section>
+
+    <section class="dash-card dash-card--quiet">
+      <header class="dash-card__head">
+        <div><h2>Assignment</h2></div>
+      </header>
+      <dl class="detail-list detail-list--compact">
+        <div class="detail-row"><dt>Owner</dt><dd>{{ enquiry.assigned_to.get_full_name|default:enquiry.assigned_to.username|default:"Unassigned" }}</dd></div>
+        <div class="detail-row"><dt>Priority</dt><dd>{{ enquiry.get_priority_display|default:"—" }}</dd></div>
+        <div class="detail-row"><dt>Follow-up</dt><dd>{{ enquiry.follow_up_date|date:"j M Y"|default:"Not set" }}</dd></div>
+      </dl>
     </section>
 
     <section class="dash-card dash-card--quiet">

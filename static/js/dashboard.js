@@ -135,12 +135,103 @@
     });
   }
 
+  function initSmtpPresets() {
+    var select = $('[data-smtp-preset]');
+    if (!select) return;
+
+    var presets = {
+      gmail: { host: 'smtp.gmail.com', port: '587', tls: true, ssl: false },
+      microsoft365: { host: 'smtp.office365.com', port: '587', tls: true, ssl: false },
+      custom: null
+    };
+
+    var host = $('#id_host');
+    var port = $('#id_port');
+    var tls = $('#id_use_tls');
+    var ssl = $('#id_use_ssl');
+    var notes = $$('[data-preset-note]');
+
+    function showNote(value) {
+      notes.forEach(function (note) {
+        note.classList.toggle('is-visible', note.getAttribute('data-preset-note') === value);
+      });
+    }
+
+    select.addEventListener('change', function () {
+      var preset = presets[select.value];
+      showNote(select.value);
+      if (!preset || !preset.host) return;
+      if (host) host.value = preset.host;
+      if (port) port.value = preset.port;
+      if (tls) tls.checked = preset.tls;
+      if (ssl) ssl.checked = preset.ssl;
+    });
+
+    function syncSecurity(changed, other) {
+      if (changed && changed.checked && other) other.checked = false;
+    }
+    if (tls && ssl) {
+      tls.addEventListener('change', function () { syncSecurity(tls, ssl); });
+      ssl.addEventListener('change', function () { syncSecurity(ssl, tls); });
+    }
+
+    showNote(select.value);
+  }
+
+  function initPlaceholderCopy() {
+    var buttons = $$('[data-copy-placeholder]');
+    if (!buttons.length) return;
+
+    function copy(value) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(value);
+      }
+      return new Promise(function (resolve, reject) {
+        var area = document.createElement('textarea');
+        area.value = value;
+        area.setAttribute('readonly', '');
+        area.style.position = 'fixed';
+        area.style.opacity = '0';
+        document.body.appendChild(area);
+        area.select();
+        try {
+          document.execCommand('copy');
+          resolve();
+        } catch (error) {
+          reject(error);
+        } finally {
+          document.body.removeChild(area);
+        }
+      });
+    }
+
+    buttons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        var name = button.getAttribute('data-copy-placeholder');
+        var token = '{{ ' + name + ' }}';
+        copy(token).then(function () {
+          var original = button.getAttribute('title') || '';
+          button.classList.add('is-copied');
+          button.setAttribute('title', 'Copied ' + token);
+          window.setTimeout(function () {
+            button.classList.remove('is-copied');
+            button.setAttribute('title', original);
+          }, 1500);
+        }).catch(function () {
+          button.setAttribute('title', 'Copy failed — select the placeholder manually.');
+        });
+      });
+    });
+  }
+
   function boot() {
     initSidebar();
     initImagePreview();
     initPermissionGroups();
     initFormsets();
     initAutoDismiss();
+    initSmtpPresets();
+    initPlaceholderCopy();
   }
 
   if (document.readyState === 'loading') {

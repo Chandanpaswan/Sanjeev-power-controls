@@ -6,7 +6,7 @@
 {% block robots %}{% if cms_page.noindex or not site_profile.allow_search_indexing %}noindex,nofollow{% else %}index,follow{% endif %}{% endblock %}
 {% block canonical %}{{ cms_page.canonical_url|default:request.build_absolute_uri }}{% endblock %}
 {% block og_title %}{{ cms_page.seo_title|default:"Contact Us" }}{% endblock %}
-{% block og_description %}{{ cms_page.seo_description|default:cms_page.hero_description|default:"Contact Sanjeev Power Controls" }}{% endblock %}
+{% block og_description %}{% if cms_page %}{{ cms_page.seo_description|default:cms_page.hero_description|default:"Contact Sanjeev Power Controls" }}{% else %}Contact Sanjeev Power Controls{% endif %}{% endblock %}
 
 {% block content %}
 <section class="page-hero">
@@ -23,6 +23,15 @@
       <span><svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>No email delivery configured</span>
       <span><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>Staff-only access</span>
     </div>
+    {% if site_profile.has_whatsapp %}
+    <div class="page-hero__actions">
+      <a class="btn btn--whatsapp" href="{{ site_profile.contact_whatsapp_link }}" target="_blank" rel="noopener">
+        <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+        WhatsApp Us
+      </a>
+      <span class="page-hero__hint">Opens WhatsApp with a pre-filled message. Review and send it in WhatsApp.</span>
+    </div>
+    {% endif %}
   </div>
 </section>
 
@@ -32,7 +41,7 @@
   <div class="container">
     <div class="notice notice--warn" data-reveal>
       <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
-      <p><strong>Demo mode:</strong> submitted enquiries are stored in this project’s SQLite database and visible in the admin dashboard. No email or WhatsApp message is sent automatically. Configure email delivery before launch.</p>
+      <p><strong>Demo mode:</strong> submitted enquiries are stored in this project’s SQLite database and visible in the admin dashboard. The WhatsApp button opens a chat with a pre-filled message, but nothing is sent until you tap send inside WhatsApp. Configure email delivery before launch.</p>
     </div>
 
     <div class="contact-layout">
@@ -135,6 +144,18 @@
           </div>
 
           <div class="info-row">
+            <div class="info-row__icon"><svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg></div>
+            <div class="info-row__body">
+              <span class="info-row__label">WhatsApp</span>
+              {% if site_profile.has_whatsapp %}
+              <span class="info-row__value"><a href="{{ site_profile.contact_whatsapp_link }}" target="_blank" rel="noopener">{{ site_profile.whatsapp_display }}</a></span>
+              {% else %}
+              <span class="info-row__value placeholder-value">Add WhatsApp number</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="info-row">
             <div class="info-row__icon"><svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg></div>
             <div class="info-row__body">
               <span class="info-row__label">Email</span>
@@ -173,10 +194,11 @@
           </div>
 
           {% if site_profile.has_whatsapp %}
-          <a class="btn btn--primary whatsapp-btn is-available" href="{{ site_profile.whatsapp_enquiry_link }}" target="_blank" rel="noopener">
+          <a class="btn btn--whatsapp whatsapp-btn is-available" href="{{ site_profile.contact_whatsapp_link }}" target="_blank" rel="noopener">
             <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
-            Chat on WhatsApp
+            Enquire on WhatsApp
           </a>
+          <p class="info-note">WhatsApp opens with a pre-filled message. Review it and tap send to reach the team.</p>
           {% endif %}
 
           <p class="info-note">Contact details are managed in the admin dashboard and can be updated at any time.</p>
@@ -191,9 +213,11 @@
           {% else %}
           <div class="map-placeholder">
             <div>
-              <span class="map-placeholder__pin"><svg class="icon" aria-hidden="true"><use href="#icon-map-pin"></use></svg></span>
-              <strong>Map placeholder</strong>
-              <p>Add the verified business address and a Google Maps embed URL in the dashboard to display the location here.</p>
+              <strong>{{ site_profile.company_name|default:"Sanjeev Power Controls" }}</strong>
+              {% if site_profile.locality_line %}
+              <p class="map-placeholder__locality">{{ site_profile.locality_line }}</p>
+              {% endif %}
+              <p>This is the confirmed locality only. A precise map pin will be added once the street address and coordinates are supplied.</p>
             </div>
           </div>
           {% endif %}
@@ -204,7 +228,7 @@
           <ol class="mini-steps">
             <li><span>1</span><p>The enquiry is saved with a unique reference (for example SPC-A1B2C3).</p></li>
             <li><span>2</span><p>Staff review it in the dashboard and change its status as follow-up progresses.</p></li>
-            <li><span>3</span><p>In production, email delivery and WhatsApp can be configured separately.</p></li>
+            <li><span>3</span><p>Prefer chat? Use the WhatsApp button for a pre-filled message you can review and send.</p></li>
           </ol>
         </div>
       </aside>

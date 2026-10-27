@@ -331,7 +331,7 @@ class MenuItemForm(forms.ModelForm):
         value = (cleaned.get("url") or "").strip()
         if value and not (value.startswith("/") or value.startswith("https://") or value.startswith("http://")):
             self.add_error("url", "Enter a relative path or a full http(s) URL.")
-        if value.startswith(("/admin-panel", "/django-admin")):
+        if value.startswith(("/admin/", "/django-admin")):
             self.add_error("url", "Administration pages cannot be added to the public menu.")
         return cleaned
 

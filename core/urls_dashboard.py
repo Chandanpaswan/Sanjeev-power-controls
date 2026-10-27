@@ -1,12 +1,13 @@
 """Dashboard URL map.
 
-The dashboard lives under ``/admin-panel/`` and is intentionally separate from
+The dashboard lives under ``/admin/`` and is intentionally separate from
 Django's own administration site. Every public sidebar destination resolves to
 a real view — there are no placeholder routes.
 """
 from django.urls import path
 
 from cms import dashboard_views as cms_views
+from email_manager import dashboard_views as email_views
 from enquiries import dashboard_views as enquiry_views
 from products import dashboard_views as product_views
 
@@ -256,6 +257,90 @@ urlpatterns = [
     path("roles/new/", dashboard_views.role_create, name="role_create"),
     path("roles/<int:pk>/edit/", dashboard_views.role_edit, name="role_edit"),
     path("roles/<int:pk>/delete/", dashboard_views.role_delete, name="role_delete"),
+    # ------------------------------------------------------------------
+    # Email manager
+    # ------------------------------------------------------------------
+    path("email-manager/", email_views.overview, name="email_overview"),
+    path(
+        "email-manager/smtp/",
+        email_views.smtp_settings,
+        name="email_smtp_settings",
+    ),
+    path(
+        "email-manager/smtp/test-connection/",
+        email_views.smtp_test_connection,
+        name="email_smtp_test_connection",
+    ),
+    path(
+        "email-manager/test-email/",
+        email_views.test_email,
+        name="email_test",
+    ),
+    path(
+        "email-manager/templates/",
+        email_views.template_list,
+        name="email_template_list",
+    ),
+    path(
+        "email-manager/templates/new/",
+        email_views.template_create,
+        name="email_template_create",
+    ),
+    path(
+        "email-manager/templates/<int:pk>/edit/",
+        email_views.template_edit,
+        name="email_template_edit",
+    ),
+    path(
+        "email-manager/templates/<int:pk>/preview/",
+        email_views.template_preview,
+        name="email_template_preview",
+    ),
+    path(
+        "email-manager/templates/<int:pk>/toggle/",
+        email_views.template_toggle,
+        name="email_template_toggle",
+    ),
+    path(
+        "email-manager/templates/<int:pk>/test/",
+        email_views.template_test,
+        name="email_template_test",
+    ),
+    path(
+        "email-manager/templates/<int:pk>/delete/",
+        email_views.template_delete,
+        name="email_template_delete",
+    ),
+    path(
+        "email-manager/logs/",
+        email_views.log_list,
+        name="email_log_list",
+    ),
+    path(
+        "email-manager/logs/prune/",
+        email_views.log_prune,
+        name="email_log_prune",
+    ),
+    path(
+        "email-manager/logs/<int:pk>/",
+        email_views.log_detail,
+        name="email_log_detail",
+    ),
+    path(
+        "email-manager/logs/<int:pk>/retry/",
+        email_views.log_retry,
+        name="email_log_retry",
+    ),
+    path(
+        "email-manager/rules/",
+        email_views.notification_rules,
+        name="email_rules",
+    ),
+    path(
+        "email-manager/rules/<int:pk>/update/",
+        email_views.notification_rule_update,
+        name="email_rule_update",
+    ),
     # ------------------------------------------------------------------
     # Notifications
     # ------------------------------------------------------------------

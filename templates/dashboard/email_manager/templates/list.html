@@ -1,0 +1,126 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Email templates{% endblock %}
+{% block eyebrow %}Email manager{% endblock %}
+{% block page_title %}Email templates{% endblock %}
+
+{% block page_actions %}
+{% if request.user.is_superuser or perms.email_manager.add_emailtemplate %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:email_template_create' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-plus"></use></svg>
+  New template
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% include "dashboard/email_manager/_tabs.html" %}
+
+<p class="dash-lede">{{ total_count }} template{{ total_count|pluralize }} match the current filters. Templates use approved placeholders only; customer-supplied values are escaped when rendered.</p>
+
+<form class="dash-filter dash-filter--wrap" method="get" action="{% url 'dashboard:email_template_list' %}" role="search">
+  <div class="dash-filter__search">
+    <label class="visually-hidden" for="template-q">Search templates</label>
+    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+    <input id="template-q" type="search" name="q" value="{{ query }}" placeholder="Search name, key or subject…">
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="template-audience">Audience</label>
+    <select id="template-audience" name="audience">
+      <option value="">All audiences</option>
+      {% for value, label in audience_choices %}
+      <option value="{{ value }}" {% if audience == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="template-state">State</label>
+    <select id="template-state" name="state">
+      <option value="">All states</option>
+      <option value="active" {% if state == 'active' %}selected{% endif %}>Active</option>
+      <option value="inactive" {% if state == 'inactive' %}selected{% endif %}>Inactive</option>
+    </select>
+  </div>
+  <button class="btn btn--navy btn--sm" type="submit">Filter</button>
+  {% if query or audience or state %}
+  <a class="btn btn--ghost btn--sm" href="{% url 'dashboard:email_template_list' %}">Clear</a>
+  {% endif %}
+</form>
+
+<section class="dash-card dash-card--flush">
+  {% if templates %}
+  <div class="table-wrap">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th scope="col">Template</th>
+          <th scope="col">Audience</th>
+          <th scope="col">Subject</th>
+          <th scope="col">Rules</th>
+          <th scope="col">State</th>
+          <th scope="col"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for template in templates %}
+        <tr>
+          <td>
+            <a href="{% url 'dashboard:email_template_edit' template.pk %}"><strong>{{ template.name }}</strong></a>
+            <span class="dash-sub mono">{{ template.key }}</span>
+            {% if template.is_system %}<span class="demo-tag demo-tag--neutral">System</span>{% endif %}
+          </td>
+          <td>{{ template.get_audience_display }}</td>
+          <td>{{ template.subject|truncatechars:60 }}</td>
+          <td>{{ template.rule_count }}</td>
+          <td>
+            <span class="status-pill status-pill--{% if template.is_active %}active{% else %}closed{% endif %}">
+              {% if template.is_active %}Active{% else %}Inactive{% endif %}
+            </span>
+          </td>
+          <td>
+            <div class="row-actions">
+              <a class="icon-btn" href="{% url 'dashboard:email_template_preview' template.pk %}" title="Preview {{ template.name }}" aria-label="Preview {{ template.name }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-eye"></use></svg>
+              </a>
+              {% if request.user.is_superuser or perms.email_manager.change_emailtemplate %}
+              <a class="icon-btn" href="{% url 'dashboard:email_template_edit' template.pk %}" title="Edit {{ template.name }}" aria-label="Edit {{ template.name }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+              </a>
+              <form method="post" action="{% url 'dashboard:email_template_toggle' template.pk %}">
+                {% csrf_token %}
+                <button class="icon-btn" type="submit" title="{% if template.is_active %}Deactivate{% else %}Activate{% endif %} {{ template.name }}" aria-label="{% if template.is_active %}Deactivate{% else %}Activate{% endif %} {{ template.name }}">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-{% if template.is_active %}close{% else %}check{% endif %}"></use></svg>
+                </button>
+              </form>
+              {% endif %}
+              {% if not template.is_system %}
+              {% if request.user.is_superuser or perms.email_manager.delete_emailtemplate %}
+              <a class="icon-btn icon-btn--danger" href="{% url 'dashboard:email_template_delete' template.pk %}" title="Delete {{ template.name }}" aria-label="Delete {{ template.name }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+              </a>
+              {% endif %}
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>
+    <h3>No templates match</h3>
+    <p>{% if query or audience or state %}Try a different search term, audience or state.{% else %}Run <code>python manage.py seed_email_manager</code> to create the default templates.{% endif %}</p>
+    {% if query or audience or state %}
+    <a class="btn btn--outline btn--sm" href="{% url 'dashboard:email_template_list' %}">Clear filters</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+
+<div class="notice notice--info notice--compact">
+  <svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
+  <p><strong>Placeholder safety:</strong> only approved placeholders such as <code>&#123;&#123; customer_name &#125;&#125;</code> are accepted. Django template tags and unknown filters are rejected, and customer values are HTML-escaped before sending.</p>
+</div>
+{% endblock %}

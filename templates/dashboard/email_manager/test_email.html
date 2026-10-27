@@ -1,0 +1,127 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Test email{% endblock %}
+{% block eyebrow %}Email manager{% endblock %}
+{% block page_title %}Test email{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:email_smtp_settings' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-sliders"></use></svg>
+  SMTP settings
+</a>
+{% endblock %}
+
+{% block content %}
+{% include "dashboard/email_manager/_tabs.html" %}
+
+<p class="dash-lede">Send a real message with the saved SMTP configuration. The result is recorded in Email Logs with the exact outcome reported by the mail server.</p>
+
+<div class="notice {% if smtp_status.css == 'success' %}notice--success{% elif smtp_status.css == 'failed' %}notice--danger{% else %}notice--warn{% endif %}">
+  <svg class="icon" aria-hidden="true"><use href="#icon-{% if smtp_status.css == 'success' %}check{% elif smtp_status.css == 'failed' %}alert{% else %}info{% endif %}"></use></svg>
+  <div>
+    <p><strong>{{ smtp_status.label }}.</strong> {{ smtp_status.detail }}</p>
+    {% if not config.is_configured %}<p>The test can still be attempted, but it will fail until a host, sender address and any required credentials are saved.</p>{% endif %}
+  </div>
+</div>
+
+<div class="dash-columns">
+  <section class="dash-card">
+    <header class="dash-card__head">
+      <div>
+        <h2>Send a test message</h2>
+        <p>Use an address you can check. Test messages are allowed while automatic notifications are disabled.</p>
+      </div>
+    </header>
+
+    <form method="post" action="{% url 'dashboard:email_test' %}" class="dash-form" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div class="form-status is-visible" role="alert">
+        {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="field{% if form.recipient.errors %} has-error{% endif %}">
+        <label for="{{ form.recipient.id_for_label }}">{{ form.recipient.label }} <span class="req">*</span></label>
+        {{ form.recipient }}
+        <span class="hint">{{ form.recipient.help_text }}</span>
+        {% for error in form.recipient.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+
+      <div class="notice notice--info notice--compact">
+        <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+        <p>A successful result means the SMTP server accepted the message. It does not prove the message reached the recipient's inbox. Check spam or quarantine folders if it does not arrive.</p>
+      </div>
+
+      <div class="dash-form__actions">
+        <button class="btn btn--primary" type="submit" onclick="return confirm('Send a real test email using the saved SMTP configuration?');">
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-send"></use></svg>
+          Send test email
+        </button>
+        <a class="btn btn--ghost" href="{% url 'dashboard:email_overview' %}">Cancel</a>
+      </div>
+    </form>
+
+    <dl class="detail-list detail-list--compact">
+      <div class="detail-row"><dt>Sender</dt><dd>{{ config.from_email|default:"Not configured" }}</dd></div>
+      <div class="detail-row"><dt>Server</dt><dd>{{ config.host|default:"Not set" }}{% if config.host %}:{{ config.port }}{% endif %}</dd></div>
+      <div class="detail-row"><dt>Security</dt><dd>{% if config.use_ssl %}SSL/TLS{% elif config.use_tls %}STARTTLS{% else %}No encryption{% endif %}</dd></div>
+      <div class="detail-row"><dt>Timeout</dt><dd>{{ config.timeout }} seconds</dd></div>
+    </dl>
+  </section>
+
+  <aside>
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Recent test messages</h2>
+          <p>The ten most recent test attempts.</p>
+        </div>
+        {% if request.user.is_superuser or perms.email_manager.view_emaillog %}
+        <a class="link-arrow" href="{% url 'dashboard:email_log_list' %}?event=test_email">View logs</a>
+        {% endif %}
+      </header>
+
+      {% if recent_tests %}
+      <div class="table-wrap">
+        <table class="dash-table">
+          <thead>
+            <tr><th scope="col">Sent</th><th scope="col">Recipient</th><th scope="col">Status</th></tr>
+          </thead>
+          <tbody>
+            {% for log in recent_tests %}
+            <tr>
+              <td>{{ log.created_at|date:"j M, H:i" }}</td>
+              <td>{{ log.recipient }}</td>
+              <td><span class="status-pill status-pill--{{ log.status_css }}">{{ log.get_status_display }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="dash-empty dash-empty--sm">
+        <svg class="icon" aria-hidden="true"><use href="#icon-send"></use></svg>
+        <h3>No test emails yet</h3>
+        <p>Your first test result will appear here.</p>
+      </div>
+      {% endif %}
+    </section>
+
+    <section class="dash-card dash-card--quiet">
+      <header class="dash-card__head">
+        <div><h2>Troubleshooting</h2></div>
+      </header>
+      <ol class="email-help-list">
+        <li>Save the SMTP settings before sending a test.</li>
+        <li>Run <strong>Test SMTP connection</strong> first — it checks authentication without sending mail.</li>
+        <li>For Gmail, use an App Password with 2-Step Verification enabled.</li>
+        <li>For Microsoft 365, ask your administrator to enable SMTP AUTH for the mailbox.</li>
+        <li>Port 587 normally uses STARTTLS; port 465 normally uses SSL/TLS. Never enable both.</li>
+        <li>Check the sanitised error in Email Logs for the next step.</li>
+      </ol>
+    </section>
+  </aside>
+</div>
+{% endblock %}

@@ -48,6 +48,12 @@
           <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
         </a>
         {% endif %}
+        {% if site_profile.has_whatsapp %}
+        <a class="btn btn--whatsapp" href="{{ site_profile.whatsapp_enquiry_link }}" target="_blank" rel="noopener">
+          <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+          Enquire on WhatsApp
+        </a>
+        {% endif %}
         <a class="btn btn--ghost-light" href="{% url 'core:contact' %}">Request an Enquiry</a>
       </div>
       <ul class="hero-points">
@@ -376,6 +382,12 @@
           Request Enquiry
           <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
         </a>
+        {% if site_profile.has_whatsapp %}
+        <a class="btn btn--whatsapp" href="{{ site_profile.whatsapp_enquiry_link }}" target="_blank" rel="noopener">
+          <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+          WhatsApp Us
+        </a>
+        {% endif %}
         <a class="btn btn--ghost-light" href="{% url 'products:list' %}">Browse Products</a>
       </div>
     </div>

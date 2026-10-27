@@ -197,6 +197,11 @@ PRODUCTS = [
 SITE_DEFAULTS = {
     "company_name": "Sanjeev Power Controls",
     "tagline": "Powering Performance. Ensuring Reliability.",
+    "business_type": "Diesel Generator (DG Set) Parts Manufacturing",
+    "city": "Faridabad",
+    "state": "Haryana",
+    "country": "India",
+    "whatsapp_number": "917015907650",
     "hero_heading": "Reliable DG Set Parts. Built for Performance.",
     "hero_description": (
         "Explore demonstration listings for filtration, engine and electrical "
@@ -314,7 +319,7 @@ class Command(BaseCommand):
             "Create an admin account with: python manage.py createsuperuser"
         )
         self.stdout.write(
-            "Then sign in at: http://127.0.0.1:8000/admin-panel/login/"
+            "Then sign in at: http://127.0.0.1:8000/admin/login/"
         )
 
     # ------------------------------------------------------------------
@@ -384,16 +389,22 @@ class Command(BaseCommand):
         legacy_placeholders = {
             "contact_email": "seo.chandanpaswan@gmail.com",
             "contact_phone": "+91 701590750",
-            "whatsapp_number": "91701590750",
         }
         scrubbed = False
         for field, value in legacy_placeholders.items():
             if getattr(site, field, "") == value:
                 setattr(site, field, "")
                 scrubbed = True
+        if site.whatsapp_number in {
+            "91701590750",
+            "+91 701590750",
+            "070159 07650",
+        }:
+            site.whatsapp_number = "917015907650"
+            scrubbed = True
         if scrubbed:
             site.save()
-            self.stdout.write("  settings: removed placeholder contact details")
+            self.stdout.write("  settings: corrected placeholder contact details")
         if reset or not site.updated_at:
             for field, value in SITE_DEFAULTS.items():
                 setattr(site, field, value)

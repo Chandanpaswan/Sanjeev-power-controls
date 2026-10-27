@@ -1,16 +1,67 @@
+import re
 from urllib.parse import quote
 
 from django.conf import settings
 from django.db import models
 
-DEFAULT_WHATSAPP_MESSAGE = (
-    "Hello Sanjeev Power Controls, I would like to enquire about DG set parts."
-)
-
 DEFAULT_MAINTENANCE_MESSAGE = (
     "The website is temporarily unavailable while scheduled maintenance is completed. "
     "Please try again shortly."
 )
+
+# WhatsApp enquiry copy. Keep these messages in one place so every public
+# surface (header, product cards, contact page, footer, floating button) sends
+# a consistent, reviewable pre-filled message.
+DEFAULT_WHATSAPP_MESSAGE = (
+    "Hello Sanjeev Power Controls, I would like to enquire about your "
+    "Diesel Generator (DG Set) parts. Please share the product details and pricing."
+)
+CONTACT_WHATSAPP_MESSAGE = (
+    "Hello Sanjeev Power Controls, I would like to discuss my DG Set parts "
+    "requirements. Please contact me with more information."
+)
+
+WHATSAPP_NUMBER_RE = re.compile(r"^\d{8,15}$")
+
+
+def normalize_whatsapp_number(value):
+    """Return WhatsApp-ready digits including the country code.
+
+    Accepts common display formats such as ``+91 70159 07650`` or
+    ``070159 07650`` and strips spaces, plus signs and punctuation. Ten-digit
+    Indian mobile numbers gain the ``91`` country code; leading trunk zeroes
+    are removed before the country code is applied.
+    """
+    digits = "".join(char for char in (value or "") if char.isdigit())
+    if len(digits) == 11 and digits.startswith("0"):
+        digits = digits[1:]
+    if len(digits) == 10:
+        digits = f"91{digits}"
+    return digits
+
+
+def is_valid_whatsapp_number(value):
+    return bool(WHATSAPP_NUMBER_RE.match(normalize_whatsapp_number(value)))
+
+
+def format_whatsapp_number(value):
+    """Format a stored WhatsApp number for readable display."""
+    digits = normalize_whatsapp_number(value)
+    if not digits:
+        return ""
+    if len(digits) == 12 and digits.startswith("91"):
+        return f"+91 {digits[2:7]} {digits[7:]}"
+    if len(digits) == 10:
+        return f"+91 {digits[:5]} {digits[5:]}"
+    return f"+{digits}"
+
+
+def whatsapp_url(number, message):
+    """Build a ``wa.me`` URL with a safely encoded pre-filled message."""
+    digits = normalize_whatsapp_number(number)
+    if not WHATSAPP_NUMBER_RE.match(digits):
+        return ""
+    return f"https://wa.me/{digits}?text={quote(message, safe='')}"
 
 
 class SiteSettings(models.Model):
@@ -47,6 +98,11 @@ class SiteSettings(models.Model):
         help_text="Optional replacement logo. Leave blank to use the built-in brand mark.",
     )
     favicon = models.ImageField(upload_to="branding/", blank=True)
+    business_type = models.CharField(
+        max_length=160,
+        blank=True,
+        default="Diesel Generator (DG Set) Parts Manufacturing",
+    )
     contact_email = models.EmailField(blank=True)
     contact_phone = models.CharField(
         max_length=40,
@@ -56,14 +112,33 @@ class SiteSettings(models.Model):
     whatsapp_number = models.CharField(
         max_length=30,
         blank=True,
-        help_text="Digits only, including country code (e.g. 919876543210).",
+        help_text=(
+            "Digits only, including country code (e.g. 917015907650). "
+            "Ten-digit Indian numbers are normalised automatically."
+        ),
     )
     business_address = models.TextField(
-        blank=True, help_text="One address line per line."
+        blank=True,
+        help_text=(
+            "Optional street-level address, one line per line. Leave blank until "
+            "a verified street address is supplied; the locality below is still shown."
+        ),
+    )
+    city = models.CharField(max_length=80, blank=True, default="Faridabad")
+    state = models.CharField(max_length=80, blank=True, default="Haryana")
+    country = models.CharField(max_length=80, blank=True, default="India")
+    pin_code = models.CharField(
+        max_length=12,
+        blank=True,
+        help_text="Optional. Leave blank unless a verified PIN code is supplied.",
     )
     hours = models.CharField(max_length=120, blank=True)
     map_embed_url = models.URLField(
-        blank=True, help_text="Google Maps embed URL. Leave blank to show a placeholder."
+        blank=True,
+        help_text=(
+            "Optional Google Maps embed URL. Leave blank to show the locality as "
+            "text without a precise map pin."
+        ),
     )
     footer_description = models.TextField(
         blank=True,
@@ -131,24 +206,77 @@ class SiteSettings(models.Model):
 
     @property
     def whatsapp_digits(self):
-        return "".join(char for char in self.whatsapp_number if char.isdigit())
+        return normalize_whatsapp_number(self.whatsapp_number)
+
+    @property
+    def whatsapp_display(self):
+        """Readable Indian/international format, e.g. ``+91 70159 07650``."""
+        return format_whatsapp_number(self.whatsapp_number)
 
     @property
     def has_whatsapp(self):
-        return len(self.whatsapp_digits) >= 8
+        return is_valid_whatsapp_number(self.whatsapp_number)
 
     @property
     def whatsapp_enquiry_link(self):
-        if not self.has_whatsapp:
+        return whatsapp_url(self.whatsapp_number, DEFAULT_WHATSAPP_MESSAGE)
+
+    @property
+    def contact_whatsapp_link(self):
+        return whatsapp_url(self.whatsapp_number, CONTACT_WHATSAPP_MESSAGE)
+
+    def product_whatsapp_link(self, product, request=None):
+        """Return a product-specific WhatsApp link with encoded message text."""
+        if not self.has_whatsapp or product is None:
             return ""
-        return (
-            f"https://wa.me/{self.whatsapp_digits}"
-            f"?text={quote(DEFAULT_WHATSAPP_MESSAGE)}"
+
+        if request is not None:
+            product_url = request.build_absolute_uri(product.get_absolute_url())
+        else:
+            product_url = getattr(product, "get_absolute_url", lambda: "")()
+
+        sku = getattr(product, "sku", "") or ""
+        sku_clause = f" (SKU: {sku})" if sku else ""
+        message = (
+            f"Hello {self.company_name}, I am interested in {product.name}"
+            f"{sku_clause}. "
+        )
+        if product_url:
+            message += f"Product page: {product_url}. "
+        message += (
+            "Please share the product specifications, availability, and pricing."
+        )
+        return whatsapp_url(self.whatsapp_number, message)
+
+    @property
+    def locality_line(self):
+        """Locality-only address composed from verified city/state/country."""
+        return ", ".join(
+            part.strip()
+            for part in (self.city, self.state, self.country)
+            if part and part.strip()
         )
 
     @property
     def address_lines(self):
-        return [line.strip() for line in self.business_address.splitlines() if line.strip()]
+        lines = [
+            line.strip()
+            for line in (self.business_address or "").splitlines()
+            if line.strip()
+        ]
+        locality = self.locality_line
+        if locality:
+            pin = (self.pin_code or "").strip()
+            street = self.business_address or ""
+            if pin and pin not in street and pin not in locality:
+                locality = f"{locality} - {pin}"
+            if locality not in lines:
+                lines.append(locality)
+        return lines
+
+    @property
+    def has_address(self):
+        return bool(self.address_lines)
 
     @property
     def social_links(self):

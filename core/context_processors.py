@@ -31,7 +31,7 @@ def dashboard_context(request):
     """Badge counts, notifications and follow-up reminders for the dashboard."""
     user = getattr(request, "user", None)
     if (
-        not request.path.startswith("/admin-panel/")
+        not request.path.startswith("/admin/")
         or not user
         or not user.is_authenticated
         or not user.is_staff

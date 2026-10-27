@@ -1,0 +1,166 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Email logs{% endblock %}
+{% block eyebrow %}Email manager{% endblock %}
+{% block page_title %}Email logs{% endblock %}
+
+{% block page_actions %}
+{% if can_prune %}
+<form method="post" action="{% url 'dashboard:email_log_prune' %}" class="email-inline-form">
+  {% csrf_token %}
+  <button class="btn btn--outline btn--sm" type="submit" onclick="return confirm('Delete email logs older than {{ retention_days }} days? This cannot be undone.');">
+    <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-trash"></use></svg>
+    Prune older than {{ retention_days }} days
+  </button>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% include "dashboard/email_manager/_tabs.html" %}
+
+<p class="dash-lede">{{ total_count }} log entr{{ total_count|pluralize:"y,ies" }} match the current filters of {{ all_count }} total. Message bodies, passwords and authentication tokens are never stored here.</p>
+
+<div class="notice notice--info notice--compact">
+  <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+  <p>“Accepted by SMTP” means the mail server accepted the message. It does not prove inbox delivery. “Delivery confirmed” is only used when a provider supplies a real receipt.</p>
+</div>
+
+<form class="dash-filter dash-filter--wrap" method="get" action="{% url 'dashboard:email_log_list' %}" role="search">
+  <div class="dash-filter__search">
+    <label class="visually-hidden" for="log-q">Search email logs</label>
+    <svg class="icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+    <input id="log-q" type="search" name="q" value="{{ query }}" placeholder="Search recipient, subject or enquiry reference…">
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="log-status">Status</label>
+    <select id="log-status" name="status">
+      <option value="">All statuses</option>
+      {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="log-event">Event</label>
+    <select id="log-event" name="event">
+      <option value="">All events</option>
+      {% for value, label in event_choices %}
+      <option value="{{ value }}" {% if event == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+      <option value="test_email" {% if event == 'test_email' %}selected{% endif %}>Test email</option>
+      <option value="template_test" {% if event == 'template_test' %}selected{% endif %}>Template preview</option>
+    </select>
+  </div>
+  <div class="dash-filter__field">
+    <label class="visually-hidden" for="log-template">Template</label>
+    <select id="log-template" name="template">
+      <option value="">All templates</option>
+      {% for key, name in template_choices %}
+      <option value="{{ key }}" {% if template_key == key %}selected{% endif %}>{{ name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="dash-filter__field dash-filter__field--date">
+    <label for="log-from">From</label>
+    <input id="log-from" type="date" name="date_from" value="{{ date_from }}">
+  </div>
+  <div class="dash-filter__field dash-filter__field--date">
+    <label for="log-to">To</label>
+    <input id="log-to" type="date" name="date_to" value="{{ date_to }}">
+  </div>
+  <button class="btn btn--navy btn--sm" type="submit">Filter</button>
+  {% if query or status or event or template_key or date_from or date_to %}
+  <a class="btn btn--ghost btn--sm" href="{% url 'dashboard:email_log_list' %}">Clear</a>
+  {% endif %}
+</form>
+
+<section class="dash-card dash-card--flush">
+  {% if logs %}
+  <div class="table-wrap">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th scope="col">When</th>
+          <th scope="col">Recipient</th>
+          <th scope="col">Subject</th>
+          <th scope="col">Event</th>
+          <th scope="col">Status</th>
+          <th scope="col">Attempts</th>
+          <th scope="col"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td>
+            <a href="{% url 'dashboard:email_log_detail' log.pk %}" title="{{ log.created_at }}">{{ log.created_at|date:"j M Y" }}</a>
+            <span class="dash-sub">{{ log.created_at|date:"H:i" }}</span>
+          </td>
+          <td>
+            <strong>{{ log.recipient }}</strong>
+            {% if log.recipient_name %}<span class="dash-sub">{{ log.recipient_name }}</span>{% endif %}
+            {% if log.enquiry %}<span class="dash-sub mono">{{ log.enquiry.reference }}</span>{% endif %}
+          </td>
+          <td>{{ log.subject|default:"—"|truncatechars:52 }}</td>
+          <td>
+            {% if log.event %}{{ log.event_label }}{% else %}—{% endif %}
+            {% if log.template_name %}<span class="dash-sub">{{ log.template_name }}</span>{% endif %}
+          </td>
+          <td><span class="status-pill status-pill--{{ log.status_css }}">{{ log.get_status_display }}</span></td>
+          <td>{{ log.attempts }}</td>
+          <td>
+            <div class="row-actions">
+              <a class="icon-btn" href="{% url 'dashboard:email_log_detail' log.pk %}" title="View log" aria-label="View log for {{ log.recipient }}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-eye"></use></svg>
+              </a>
+              {% if log.can_retry and perms.email_manager.change_emaillog %}
+              <form method="post" action="{% url 'dashboard:email_log_retry' log.pk %}">
+                {% csrf_token %}
+                <button class="icon-btn" type="submit" title="Retry this email" aria-label="Retry email to {{ log.recipient }}" onclick="return confirm('Rebuild and resend this failed enquiry notification?');">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="dash-empty">
+    <svg class="icon" aria-hidden="true"><use href="#icon-inbox"></use></svg>
+    <h3>No email logs match</h3>
+    <p>{% if query or status or event or template_key or date_from or date_to %}Try a different search term, status or date range.{% else %}Test messages and enquiry notifications will be recorded here automatically.{% endif %}</p>
+    {% if query or status or event or template_key or date_from or date_to %}
+    <a class="btn btn--outline btn--sm" href="{% url 'dashboard:email_log_list' %}">Clear filters</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="dash-pagination" aria-label="Email log pagination">
+  <p class="dash-pagination__status">
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    · {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ total_count }}
+  </p>
+  <div class="dash-pagination__links">
+    {% if page_obj.has_previous %}
+    <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">
+      <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-chevron-left"></use></svg>
+      Previous
+    </a>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}">
+      Next
+      <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-chevron-right"></use></svg>
+    </a>
+    {% endif %}
+  </div>
+</nav>
+{% endif %}
+{% endblock %}

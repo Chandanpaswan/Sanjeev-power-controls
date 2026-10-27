@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Customer Dashboard — Sanjeev Power Controls{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="section__title">My Dashboard</h1>
+    <div class="row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
+      <div class="card" style="padding:1.5rem;text-align:center;"><h3>{{ total_enquiries }}</h3><p>Total Enquiries</p></div>
+      <div class="card" style="padding:1.5rem;text-align:center;"><h3>{{ new_enquiries }}</h3><p>New Enquiries</p></div>
+      <div class="card" style="padding:1.5rem;text-align:center;"><h3>{{ in_progress_enquiries }}</h3><p>In-Progress</p></div>
+      <div class="card" style="padding:1.5rem;text-align:center;"><h3>{{ quotations_received }}</h3><p>Quotations Received</p></div>
+      <div class="card" style="padding:1.5rem;text-align:center;"><h3>{{ closed_enquiries }}</h3><p>Closed</p></div>
+    </div>
+    <div style="margin-top:2rem;">
+      <h2>Recent Enquiries</h2>
+      <table class="table">
+        <thead><tr><th>Reference</th><th>Product</th><th>Status</th><th>Date</th><th></th></tr></thead>
+        <tbody>
+          {% for enquiry in recent_enquiries %}
+          <tr><td>{{ enquiry.reference }}</td><td>{{ enquiry.product_label }}</td><td>{{ enquiry.status }}</td><td>{{ enquiry.created_at|date:"Y-m-d" }}</td><td><a href="{% url 'accounts:customer_enquiry_detail' enquiry.pk %}">View</a></td></tr>
+          {% empty %}
+          <tr><td colspan="5">No enquiries yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <a href="{% url 'accounts:customer_enquiries' %}" class="btn btn--secondary">View All Enquiries</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

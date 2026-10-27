@@ -6,7 +6,7 @@
 {% block robots %}{% if cms_page.noindex or not site_profile.allow_search_indexing %}noindex,nofollow{% else %}index,follow{% endif %}{% endblock %}
 {% block canonical %}{{ cms_page.canonical_url|default:request.build_absolute_uri }}{% endblock %}
 {% block og_title %}{{ cms_page.seo_title|default:"Quality & Applications" }}{% endblock %}
-{% block og_description %}{{ cms_page.seo_description|default:cms_page.hero_description|default:"Quality and applications" }}{% endblock %}
+{% block og_description %}{% if cms_page %}{{ cms_page.seo_description|default:cms_page.hero_description|default:"Quality and applications" }}{% else %}Quality and applications{% endif %}{% endblock %}
 
 {% block content %}
 <section class="page-hero">
@@ -213,6 +213,12 @@
           Request Enquiry
           <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
         </a>
+        {% if site_profile.has_whatsapp %}
+        <a class="btn btn--whatsapp" href="{{ site_profile.whatsapp_enquiry_link }}" target="_blank" rel="noopener">
+          <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+          WhatsApp Us
+        </a>
+        {% endif %}
         <a class="btn btn--ghost-light" href="{% url 'products:list' %}">Browse products</a>
       </div>
     </div>

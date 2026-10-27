@@ -1,0 +1,116 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Preview {{ template.name }}{% endblock %}
+{% block eyebrow %}Email manager{% endblock %}
+{% block page_title %}Preview: {{ template.name }}{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:email_template_list' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+  All templates
+</a>
+{% if request.user.is_superuser or perms.email_manager.change_emailtemplate %}
+<a class="btn btn--outline btn--sm" href="{% url 'dashboard:email_template_edit' template.pk %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-pencil"></use></svg>
+  Edit template
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% include "dashboard/email_manager/_tabs.html" %}
+
+<p class="dash-lede">Rendered with sample data. This preview does not send an email. Customer values in the real message are escaped before rendering.</p>
+
+{% if preview_error %}
+<div class="notice notice--danger">
+  <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+  <p><strong>The template could not be rendered.</strong> {{ preview_error }}</p>
+</div>
+{% endif %}
+
+<div class="email-preview-head">
+  <div>
+    <span class="email-preview-label">Subject</span>
+    <h2 class="email-preview-subject">{{ preview_subject|default:"—" }}</h2>
+  </div>
+  <span class="status-pill status-pill--{% if template.is_active %}active{% else %}closed{% endif %}">
+    {% if template.is_active %}Active{% else %}Inactive{% endif %}
+  </span>
+</div>
+
+<div class="dash-columns">
+  <section class="dash-card">
+    <header class="dash-card__head">
+      <div>
+        <h2>HTML preview</h2>
+        <p>Rendered in a sandboxed frame so template styles cannot affect the dashboard.</p>
+      </div>
+    </header>
+    {% if preview_html %}
+    <iframe class="email-preview-frame" title="HTML preview of {{ template.name }}" sandbox="" srcdoc="{{ preview_html|escape }}"></iframe>
+    {% else %}
+    <div class="dash-empty dash-empty--sm">
+      <svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg>
+      <h3>No HTML body</h3>
+      <p>This template only has a plain-text body.</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <aside>
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Plain-text alternative</h2>
+          <p>Used by email clients that block HTML.</p>
+        </div>
+      </header>
+      {% if preview_text %}
+      <pre class="email-preview-text">{{ preview_text }}</pre>
+      {% else %}
+      <p class="dash-note">No plain-text body. A generic fallback is used when sending.</p>
+      {% endif %}
+    </section>
+
+    {% if request.user.is_superuser or perms.email_manager.change_emailtemplate %}
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Send a preview</h2>
+          <p>Delivers this template once with sample data.</p>
+        </div>
+      </header>
+      <form method="post" action="{% url 'dashboard:email_template_test' template.pk %}" class="dash-form" novalidate>
+        {% csrf_token %}
+        <div class="field{% if test_form.recipient.errors %} has-error{% endif %}">
+          <label for="{{ test_form.recipient.id_for_label }}">{{ test_form.recipient.label }} <span class="req">*</span></label>
+          {{ test_form.recipient }}
+          <span class="hint">{{ test_form.recipient.help_text }}</span>
+          {% for error in test_form.recipient.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="dash-form__actions">
+          <button class="btn btn--primary btn--sm" type="submit" onclick="return confirm('Send this preview email with sample data?');">
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-send"></use></svg>
+            Send preview email
+          </button>
+        </div>
+      </form>
+      <p class="dash-note">Preview sends are recorded in Email Logs. They are allowed while automatic notifications are disabled, but the SMTP settings must still be valid.</p>
+    </section>
+    {% endif %}
+
+    <section class="dash-card dash-card--quiet">
+      <header class="dash-card__head">
+        <div><h2>Template record</h2></div>
+      </header>
+      <dl class="detail-list detail-list--compact">
+        <div class="detail-row"><dt>Key</dt><dd class="mono">{{ template.key }}</dd></div>
+        <div class="detail-row"><dt>Audience</dt><dd>{{ template.get_audience_display }}</dd></div>
+        <div class="detail-row"><dt>Rules</dt><dd>{{ template.rules.count }} linked</dd></div>
+        <div class="detail-row"><dt>Updated</dt><dd>{{ template.updated_at|date:"j M Y, H:i" }}</dd></div>
+      </dl>
+    </section>
+  </aside>
+</div>
+{% endblock %}

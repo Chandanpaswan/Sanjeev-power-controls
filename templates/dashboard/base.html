@@ -63,6 +63,41 @@
         </a>
         {% endif %}
 
+        {% if perms.email_manager.view_emaillog or perms.email_manager.view_emailtemplate or perms.email_manager.manage_smtp or perms.email_manager.view_notificationrule %}
+        <p class="dash-sidebar__label">Email manager</p>
+        {% if perms.email_manager.view_emaillog or perms.email_manager.view_emailtemplate or perms.email_manager.manage_smtp %}
+        <a href="{% url 'dashboard:email_overview' %}" {% if request.resolver_match.url_name == 'email_overview' %}class="is-active" aria-current="page"{% endif %}>
+          <svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
+          <span>Email Overview</span>
+        </a>
+        {% endif %}
+        <div class="dash-nav__sub">
+          {% if perms.email_manager.manage_smtp %}
+          <a href="{% url 'dashboard:email_smtp_settings' %}" {% if request.resolver_match.url_name == 'email_smtp_settings' %}class="is-active" aria-current="page"{% endif %}>
+            <span>SMTP Settings</span>
+          </a>
+          <a href="{% url 'dashboard:email_test' %}" {% if request.resolver_match.url_name == 'email_test' %}class="is-active" aria-current="page"{% endif %}>
+            <span>Test Email</span>
+          </a>
+          {% endif %}
+          {% if perms.email_manager.view_emailtemplate %}
+          <a href="{% url 'dashboard:email_template_list' %}" {% if 'email_template' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+            <span>Email Templates</span>
+          </a>
+          {% endif %}
+          {% if perms.email_manager.view_emaillog %}
+          <a href="{% url 'dashboard:email_log_list' %}" {% if 'email_log' in request.resolver_match.url_name %}class="is-active" aria-current="page"{% endif %}>
+            <span>Email Logs</span>
+          </a>
+          {% endif %}
+          {% if perms.email_manager.view_notificationrule %}
+          <a href="{% url 'dashboard:email_rules' %}" {% if request.resolver_match.url_name == 'email_rules' %}class="is-active" aria-current="page"{% endif %}>
+            <span>Notification Rules</span>
+          </a>
+          {% endif %}
+        </div>
+        {% endif %}
+
         {% if perms.cms.view_page or perms.cms.view_blogpost or perms.cms.view_mediaasset %}
         <p class="dash-sidebar__label">Website content</p>
         {% endif %}

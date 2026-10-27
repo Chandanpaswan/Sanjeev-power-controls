@@ -1,4 +1,5 @@
-{% load static %}
+{% load static whatsapp %}
+{% product_whatsapp_link product as product_whatsapp_url %}
 <article class="product-card" data-reveal>
   <div class="product-media">
     <span class="demo-tag">Demo product</span>
@@ -21,7 +22,15 @@
         View details
         <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
       </a>
-      <a class="btn btn--primary btn--sm" href="{{ product.enquiry_url }}">Request Enquiry</a>
+      <div class="product-actions__buttons">
+        {% if product_whatsapp_url %}
+        <a class="btn btn--whatsapp btn--sm" href="{{ product_whatsapp_url }}" target="_blank" rel="noopener">
+          <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+          WhatsApp
+        </a>
+        {% endif %}
+        <a class="btn btn--primary btn--sm" href="{{ product.enquiry_url }}">Request Enquiry</a>
+      </div>
     </div>
   </div>
 </article>

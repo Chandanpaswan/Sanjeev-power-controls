@@ -13,7 +13,14 @@ from django.contrib.auth.models import Group, Permission
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-ALL_PERMISSION_APPS = ("cms", "core", "enquiries", "products", "auth")
+ALL_PERMISSION_APPS = (
+    "cms",
+    "core",
+    "email_manager",
+    "enquiries",
+    "products",
+    "auth",
+)
 
 ROLE_RULES = {
     "Super Admin": {
@@ -27,6 +34,9 @@ ROLE_RULES = {
             "core.change_sitesettings",
             "core.view_activitylog",
             "core.view_notification",
+            "email_manager.view_emaillog",
+            "email_manager.view_emailtemplate",
+            "email_manager.view_notificationrule",
             "products.view_product",
             "products.view_category",
         ),
@@ -52,11 +62,14 @@ ROLE_RULES = {
             "products.view_category",
             "core.view_activitylog",
             "core.view_notification",
+            "email_manager.view_emaillog",
+            "email_manager.view_emailtemplate",
+            "email_manager.view_notificationrule",
         ),
         "description": "Enquiries, customers, follow-up, conversion and sales reports.",
     },
     "Viewer / Analyst": {
-        "view_only_apps": ("cms", "core", "enquiries", "products"),
+        "view_only_apps": ("cms", "core", "email_manager", "enquiries", "products"),
         "description": "Read-only access to content, catalogue, enquiries and reports.",
     },
 }

@@ -55,8 +55,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
+    "accounts",
     "cms",
     "core",
+    "email_manager",
     "products",
     "enquiries",
 ]
@@ -72,6 +74,8 @@ MIDDLEWARE = [
     "core.middleware.MaintenanceModeMiddleware",
     "core.middleware.AdminRedirectMiddleware",
 ]
+
+AUTH_USER_MODEL = "auth.User"  # Revert to default User to avoid conflicts
 
 ROOT_URLCONF = "config.urls"
 
@@ -184,9 +188,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 8 * 1024 * 1024
 
-LOGIN_URL = "/admin-panel/login/"
-LOGIN_REDIRECT_URL = "/admin-panel/"
-LOGOUT_REDIRECT_URL = "/admin-panel/login/"
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
 # Session hardening. Staff sessions expire after 12 hours of inactivity.
 SESSION_COOKIE_HTTPONLY = True
@@ -251,6 +256,38 @@ EMAIL_PORT = int(env("EMAIL_PORT", "587") or 587)
 EMAIL_HOST_USER = env("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
+EMAIL_TIMEOUT = int(env("EMAIL_TIMEOUT", "20") or 20)
+ADMIN_NOTIFICATION_EMAIL = env("ADMIN_NOTIFICATION_EMAIL", "")
+
+# ---------------------------------------------------------------------------
+# Email Manager
+# ---------------------------------------------------------------------------
+# Database-backed SMTP credentials are encrypted with this key. It must live
+# outside the database and the repository. Use a Fernet key or a long random
+# passphrase. In DEBUG mode a key derived from DJANGO_SECRET_KEY is used as a
+# local-only fallback.
+EMAIL_ENCRYPTION_KEY = env("EMAIL_ENCRYPTION_KEY", "")
+
+# "database" sends through the SMTP settings saved in the dashboard.
+# "django" uses EMAIL_BACKEND (used by automated tests with the in-memory
+# backend, and available for environment-only deployments).
+EMAIL_MANAGER_TRANSPORT = env("EMAIL_MANAGER_TRANSPORT", "database").lower()
+if EMAIL_MANAGER_TRANSPORT not in {"database", "django"}:
+    raise ImproperlyConfigured(
+        "EMAIL_MANAGER_TRANSPORT must be 'database' or 'django'."
+    )
+
+# Total attempts = 1 + EMAIL_MANAGER_AUTO_RETRIES. Only transient connection
+# failures are retried automatically; every attempt is counted on the email log.
+EMAIL_MANAGER_MAX_ATTEMPTS = int(env("EMAIL_MANAGER_MAX_ATTEMPTS", "3") or 3)
+EMAIL_MANAGER_AUTO_RETRIES = int(env("EMAIL_MANAGER_AUTO_RETRIES", "1") or 1)
+EMAIL_MANAGER_RETRY_DELAY = float(env("EMAIL_MANAGER_RETRY_DELAY", "2") or 2)
+EMAIL_LOG_RETENTION_DAYS = int(env("EMAIL_LOG_RETENTION_DAYS", "180") or 180)
+
+# Used to build absolute links in emails sent outside a request (for example by
+# a management command). Set this to the public HTTPS origin in production.
+SITE_BASE_URL = env("SITE_BASE_URL", "")
 
 handler404 = "core.views.error_404"
 handler500 = "core.views.error_500"

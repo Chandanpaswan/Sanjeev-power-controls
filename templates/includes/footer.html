@@ -6,6 +6,8 @@
         <a href="{% url 'core:home' %}" aria-label="{{ site_profile.company_name|default:'Sanjeev Power Controls' }} — home">
           <img src="{% static 'images/branding/spc-logo-light.svg' %}" alt="{{ site_profile.company_name|default:'Sanjeev Power Controls' }}" width="312" height="96">
         </a>
+        <p class="footer-company-name">{{ site_profile.company_name|default:"Sanjeev Power Controls" }}</p>
+        <p class="footer-business-type">{{ site_profile.business_type|default:"Diesel Generator (DG Set) Parts Manufacturing" }}</p>
         <p>{{ site_profile.footer_description|default:"A demonstration website presenting DG set filtration, engine and electrical parts for enquiry-led supply." }}</p>
         <p class="footer-tagline">{{ site_profile.tagline|default:"Powering Performance. Ensuring Reliability." }}</p>
         {% if site_profile.social_links %}
@@ -29,7 +31,6 @@
           <li><a href="{% url 'core:about' %}">About Us</a></li>
           <li><a href="{% url 'products:list' %}">Products</a></li>
           <li><a href="{% url 'core:quality' %}">Quality &amp; Applications</a></li>
-          <li><a href="{% url 'blog:list' %}">Blog</a></li>
           <li><a href="{% url 'core:contact' %}">Contact Us</a></li>
           {% endif %}
         </ul>
@@ -58,6 +59,14 @@
             {% endif %}
           </li>
           <li>
+            <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+            {% if site_profile.has_whatsapp %}
+            <a href="{{ site_profile.whatsapp_enquiry_link }}" target="_blank" rel="noopener">WhatsApp: {{ site_profile.whatsapp_display }}</a>
+            {% else %}
+            <span class="placeholder-value">WhatsApp number to be added</span>
+            {% endif %}
+          </li>
+          <li>
             <svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
             {% if site_profile.contact_email %}
             <a href="mailto:{{ site_profile.contact_email }}">{{ site_profile.contact_email }}</a>
@@ -82,7 +91,7 @@
         {% endif %}
         <p class="footer-demo-note">
           <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
-          <span>Demo build. Contact details, specifications and company claims must be verified before launch.</span>
+          <span>Demo build. Product specifications and company claims must be verified before launch.</span>
         </p>
       </div>
     </div>

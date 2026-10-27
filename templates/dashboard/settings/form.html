@@ -76,7 +76,11 @@
         </li>
         <li class="detail-row">
           <dt>WhatsApp</dt>
-          <dd>{% if site.has_whatsapp %}{{ site.whatsapp_number }}{% else %}<span class="dash-sub">Not configured</span>{% endif %}</dd>
+          <dd>{% if site.has_whatsapp %}{{ site.whatsapp_display }}{% else %}<span class="dash-sub">Not configured</span>{% endif %}</dd>
+        </li>
+        <li class="detail-row">
+          <dt>Address</dt>
+          <dd>{% if site.address_lines %}{{ site.locality_line }}{% else %}<span class="dash-sub">Not configured</span>{% endif %}</dd>
         </li>
         <li class="detail-row">
           <dt>Indexing</dt>

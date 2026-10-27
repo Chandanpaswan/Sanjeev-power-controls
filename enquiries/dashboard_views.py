@@ -237,6 +237,8 @@ def enquiry_detail(request, pk):
             messages.error(request, "You do not have permission to update enquiries.")
             return redirect("dashboard:enquiry_detail", pk=enquiry.pk)
         old_status = enquiry.status
+        old_assigned_to_id = enquiry.assigned_to_id
+        old_follow_up_date = enquiry.follow_up_date
         if form.is_valid():
             enquiry = form.save()
             log_activity(
@@ -250,9 +252,31 @@ def enquiry_detail(request, pk):
                 ),
                 target=enquiry,
             )
+            try:
+                from email_manager.notifications import (
+                    notify_assignment,
+                    notify_status_change,
+                )
+
+                if old_status != enquiry.status:
+                    notify_status_change(
+                        enquiry, old_status, enquiry.status, actor=request.user
+                    )
+                if old_assigned_to_id != enquiry.assigned_to_id:
+                    notify_assignment(enquiry, actor=request.user)
+            except Exception:
+                # Email failures never block a saved enquiry update.
+                pass
             messages.success(request, f"Enquiry {enquiry.reference} updated.")
             return redirect("dashboard:enquiry_detail", pk=enquiry.pk)
         messages.error(request, "Please correct the highlighted fields.")
+
+    email_logs = (
+        enquiry.email_logs.select_related("triggered_by")
+        .order_by("-created_at")[:12]
+        if request.user.has_perm("email_manager.view_emaillog")
+        else []
+    )
 
     return render(
         request,
@@ -265,6 +289,12 @@ def enquiry_detail(request, pk):
             "can_change": can_change,
             "can_delete": can_delete,
             "can_convert": can_convert,
+            "email_logs": email_logs,
+            "can_view_email_logs": request.user.has_perm(
+                "email_manager.view_emaillog"
+            ),
+            "can_manage_smtp": request.user.is_superuser
+            or request.user.has_perm("email_manager.manage_smtp"),
         },
     )
 

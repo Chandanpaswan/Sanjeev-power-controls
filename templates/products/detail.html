@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static whatsapp %}
 
 {% block title %}{% if product.seo_title %}{{ product.seo_title }}{% else %}{{ product.name }} &mdash; {{ site_profile.company_name|default:"Sanjeev Power Controls" }}{% endif %}{% endblock %}
 {% block description %}{{ product.seo_description|default:product.short_description }}{% endblock %}
@@ -26,6 +26,7 @@
 {% endblock %}
 
 {% block content %}
+{% product_whatsapp_link product as product_whatsapp_url %}
 <section class="page-hero">
   <div class="container">
     <ol class="breadcrumb">
@@ -88,10 +89,19 @@
             Request Enquiry
             <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
           </a>
+          {% if product_whatsapp_url %}
+          <a class="btn btn--whatsapp" href="{{ product_whatsapp_url }}" target="_blank" rel="noopener">
+            <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+            Enquire on WhatsApp
+          </a>
+          {% endif %}
           <a class="btn btn--outline" href="{% url 'products:list' %}">
             Back to catalogue
           </a>
         </div>
+        {% if product_whatsapp_url %}
+        <p class="product-detail__note">WhatsApp opens with this product’s name, SKU and page link. Review the message and send it to the team.</p>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -134,6 +144,12 @@
           Request Enquiry
           <svg class="icon icon--arrow" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
         </a>
+        {% if product_whatsapp_url %}
+        <a class="btn btn--whatsapp" href="{{ product_whatsapp_url }}" target="_blank" rel="noopener">
+          <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+          WhatsApp Enquiry
+        </a>
+        {% endif %}
         <a class="btn btn--ghost-light" href="{% url 'core:contact' %}">General enquiry</a>
       </div>
     </div>

@@ -40,12 +40,17 @@
     "@type": "Organization",
     "name": "{{ site_profile.company_name|escapejs }}",
     "url": "{{ request.scheme }}://{{ request.get_host }}",
-    "slogan": "{{ site_profile.tagline|escapejs }}",{% if site_profile.contact_email %}
+    "slogan": "{{ site_profile.tagline|escapejs }}",
+    "description": "{{ site_profile.business_type|escapejs }}",{% if site_profile.contact_email %}
     "email": "{{ site_profile.contact_email|escapejs }}",{% endif %}{% if site_profile.has_phone %}
-    "telephone": "{{ site_profile.contact_phone|escapejs }}",{% endif %}{% if site_profile.address_lines %}
+    "telephone": "{{ site_profile.contact_phone|escapejs }}",{% endif %}{% if site_profile.has_address %}
     "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "{{ site_profile.business_address|escapejs }}"
+      "@type": "PostalAddress"{% if site_profile.business_address %},
+      "streetAddress": "{{ site_profile.business_address|escapejs }}"{% endif %}{% if site_profile.city %},
+      "addressLocality": "{{ site_profile.city|escapejs }}"{% endif %}{% if site_profile.state %},
+      "addressRegion": "{{ site_profile.state|escapejs }}"{% endif %}{% if site_profile.pin_code %},
+      "postalCode": "{{ site_profile.pin_code|escapejs }}"{% endif %}{% if site_profile.country %},
+      "addressCountry": "{{ site_profile.country|escapejs }}"{% endif %}
     },{% endif %}{% if site_profile.social_links %}
     "sameAs": [{% for name, url in site_profile.social_links %}"{{ url|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}],{% endif %}
     "logo": "{{ request.scheme }}://{{ request.get_host }}{% if site_profile.display_logo_url %}{{ site_profile.display_logo_url }}{% else %}{% static 'images/branding/spc-logo.png' %}{% endif %}"
@@ -76,6 +81,13 @@
   </main>
 
   {% include "includes/footer.html" %}
+
+  {% if site_profile.has_whatsapp %}
+  <a class="whatsapp-float" href="{{ site_profile.whatsapp_enquiry_link }}" target="_blank" rel="noopener" aria-label="Enquire on WhatsApp at {{ site_profile.whatsapp_display }}">
+    <svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+    <span class="whatsapp-float__label">WhatsApp Us</span>
+  </a>
+  {% endif %}
 
   <button class="to-top" type="button" aria-label="Back to top">
     <svg class="icon" aria-hidden="true"><use href="#icon-arrow-up"></use></svg>

@@ -14,7 +14,10 @@ def create_enquiry(request):
 
     form = EnquiryForm(request.POST)
     if form.is_valid():
-        enquiry = form.save()
+        enquiry = form.save(commit=False)
+        if request.user.is_authenticated:
+            enquiry.user = request.user
+        enquiry.save()
         try:
             notify_staff(
                 title=f"New website enquiry {enquiry.reference}",
@@ -28,6 +31,14 @@ def create_enquiry(request):
             )
         except Exception:
             # A notification failure must never lose a customer enquiry.
+            pass
+        try:
+            # Email is a side effect: the enquiry above is already committed.
+            # notify_new_enquiry records every attempt and never raises.
+            from email_manager.notifications import notify_new_enquiry
+
+            notify_new_enquiry(enquiry, request=request)
+        except Exception:
             pass
         messages.success(
             request,

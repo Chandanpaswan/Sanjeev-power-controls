@@ -1,0 +1,195 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block title %}Email overview{% endblock %}
+{% block eyebrow %}Email manager{% endblock %}
+{% block page_title %}Email overview{% endblock %}
+
+{% block page_actions %}
+{% if can_manage_smtp %}
+<a class="btn btn--primary btn--sm" href="{% url 'dashboard:email_test' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-send"></use></svg>
+  Send test email
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% include "dashboard/email_manager/_tabs.html" %}
+
+<p class="dash-lede">Every figure below is calculated from stored email log records. “Accepted by SMTP” means the server accepted the message — it does not prove inbox delivery.</p>
+
+<div class="stat-grid">
+  <a class="stat-card" href="{% url 'dashboard:email_log_list' %}">
+    <span class="stat-card__icon"><svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg></span>
+    <span class="stat-card__value">{{ stats.total }}</span>
+    <span class="stat-card__label">Total send attempts</span>
+    <span class="stat-card__meta">{{ stats.last_24h }} in the last 24 hours</span>
+  </a>
+  <a class="stat-card" href="{% url 'dashboard:email_log_list' %}?status=sent">
+    <span class="stat-card__icon stat-card__icon--green"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>
+    <span class="stat-card__value">{{ stats.accepted }}</span>
+    <span class="stat-card__label">Accepted by SMTP</span>
+    <span class="stat-card__meta">{{ stats.success_rate }}% of attempts{% if stats.confirmed %} · {{ stats.confirmed }} delivery-confirmed{% endif %}</span>
+  </a>
+  <a class="stat-card stat-card--alert" href="{% url 'dashboard:email_log_list' %}?status=failed">
+    <span class="stat-card__icon stat-card__icon--red"><svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg></span>
+    <span class="stat-card__value">{{ stats.failed }}</span>
+    <span class="stat-card__label">Failed attempts</span>
+    <span class="stat-card__meta">Review and retry eligible failures</span>
+  </a>
+  <a class="stat-card" href="{% url 'dashboard:email_log_list' %}?status=queued">
+    <span class="stat-card__icon stat-card__icon--blue"><svg class="icon" aria-hidden="true"><use href="#icon-clock"></use></svg></span>
+    <span class="stat-card__value">{{ stats.queued }}</span>
+    <span class="stat-card__label">Queued</span>
+    <span class="stat-card__meta">{{ stats.skipped }} skipped by configuration</span>
+  </a>
+  {% if can_manage_smtp %}
+  <a class="stat-card" href="{% url 'dashboard:email_smtp_settings' %}">
+    <span class="stat-card__icon {% if smtp_status.css == 'success' %}stat-card__icon--green{% elif smtp_status.css == 'failed' %}stat-card__icon--red{% else %}stat-card__icon--blue{% endif %}">
+      <svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
+    </span>
+    <span class="stat-card__value stat-card__value--text">{{ smtp_status.label }}</span>
+    <span class="stat-card__label">SMTP connection status</span>
+    <span class="stat-card__meta">{{ smtp_status.detail }}</span>
+  </a>
+  {% else %}
+  <div class="stat-card">
+    <span class="stat-card__icon {% if smtp_status.css == 'success' %}stat-card__icon--green{% elif smtp_status.css == 'failed' %}stat-card__icon--red{% else %}stat-card__icon--blue{% endif %}">
+      <svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
+    </span>
+    <span class="stat-card__value stat-card__value--text">{{ smtp_status.label }}</span>
+    <span class="stat-card__label">SMTP connection status</span>
+    <span class="stat-card__meta">{{ smtp_status.detail }}</span>
+  </div>
+  {% endif %}
+</div>
+
+<div class="dash-columns">
+  <section class="dash-card dash-card--flush">
+    <header class="dash-card__head">
+      <div>
+        <h2>Recent email activity</h2>
+        <p>The eight most recent send attempts.</p>
+      </div>
+      <a class="link-arrow" href="{% url 'dashboard:email_log_list' %}">
+        View all
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-right"></use></svg>
+      </a>
+    </header>
+
+    {% if recent_logs %}
+    <div class="table-wrap">
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th scope="col">When</th>
+            <th scope="col">Recipient</th>
+            <th scope="col">Subject</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in recent_logs %}
+          <tr>
+            <td>
+              <a href="{% url 'dashboard:email_log_detail' log.pk %}" title="{{ log.created_at }}">{{ log.created_at|naturaltime }}</a>
+            </td>
+            <td>
+              <strong>{{ log.recipient }}</strong>
+              {% if log.enquiry %}<span class="dash-sub mono">{{ log.enquiry.reference }}</span>{% endif %}
+            </td>
+            <td>{{ log.subject|default:"—"|truncatechars:48 }}</td>
+            <td><span class="status-pill status-pill--{{ log.status_css }}">{{ log.get_status_display }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="dash-empty">
+      <svg class="icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
+      <h3>No email activity yet</h3>
+      <p>Enquiry notifications and test messages will be recorded here automatically.</p>
+      {% if can_manage_smtp %}<a class="btn btn--outline btn--sm" href="{% url 'dashboard:email_test' %}">Send a test email</a>{% endif %}
+    </div>
+    {% endif %}
+  </section>
+
+  <div>
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Delivery summary</h2>
+          <p>Last successful and failed attempts.</p>
+        </div>
+      </header>
+      <dl class="detail-list detail-list--compact">
+        <div class="detail-row">
+          <dt>Last success</dt>
+          <dd>
+            {% if last_success %}
+            <a href="{% url 'dashboard:email_log_detail' last_success.pk %}">{{ last_success.recipient }}</a>
+            <span class="dash-sub">{{ last_success.sent_at|date:"j M Y, H:i" }}</span>
+            {% else %}No accepted email yet{% endif %}
+          </dd>
+        </div>
+        <div class="detail-row">
+          <dt>Last failure</dt>
+          <dd>
+            {% if last_failure %}
+            <a href="{% url 'dashboard:email_log_detail' last_failure.pk %}">{{ last_failure.recipient }}</a>
+            <span class="dash-sub">{{ last_failure.error_summary|truncatechars:70 }}</span>
+            {% else %}No failed email recorded{% endif %}
+          </dd>
+        </div>
+        <div class="detail-row">
+          <dt>Templates</dt>
+          <dd>{{ active_template_count }} active of {{ template_count }} <span class="dash-sub">Manage reusable content</span></dd>
+        </div>
+        <div class="detail-row">
+          <dt>Rules</dt>
+          <dd>{{ enabled_rule_count }} enabled of {{ rule_count }} <span class="dash-sub">Control which events send mail</span></dd>
+        </div>
+      </dl>
+      <div class="notice notice--info notice--compact">
+        <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+        <p>SMTP acceptance is not the same as inbox delivery. The Delivery confirmed status is only used when a provider supplies a real receipt.</p>
+      </div>
+    </section>
+
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Quick actions</h2>
+          <p>Set up and verify email delivery.</p>
+        </div>
+      </header>
+      <div class="quick-grid">
+        {% if can_manage_smtp %}
+        <a class="quick-action" href="{% url 'dashboard:email_smtp_settings' %}">
+          <span class="quick-action__icon"><svg class="icon" aria-hidden="true"><use href="#icon-sliders"></use></svg></span>
+          <span><strong>SMTP settings</strong><span>Credentials, sender and security</span></span>
+        </a>
+        <a class="quick-action" href="{% url 'dashboard:email_test' %}">
+          <span class="quick-action__icon"><svg class="icon" aria-hidden="true"><use href="#icon-send"></use></svg></span>
+          <span><strong>Send a test email</strong><span>Verify a real message</span></span>
+        </a>
+        {% endif %}
+        {% if request.user.is_superuser or perms.email_manager.view_emailtemplate %}
+        <a class="quick-action" href="{% url 'dashboard:email_template_list' %}">
+          <span class="quick-action__icon"><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg></span>
+          <span><strong>Email templates</strong><span>Edit content and previews</span></span>
+        </a>
+        {% endif %}
+        {% if request.user.is_superuser or perms.email_manager.view_notificationrule %}
+        <a class="quick-action" href="{% url 'dashboard:email_rules' %}">
+          <span class="quick-action__icon"><svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg></span>
+          <span><strong>Notification rules</strong><span>Choose which events send mail</span></span>
+        </a>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

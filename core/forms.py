@@ -3,7 +3,6 @@ from __future__ import annotations
 from functools import wraps
 
 from django import forms
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, PasswordResetForm
@@ -11,12 +10,31 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Q
+from django.urls import reverse, reverse_lazy
 
-from .models import SiteSettings
+from .models import (
+    SiteSettings,
+    is_valid_whatsapp_number,
+    normalize_whatsapp_number,
+)
 from .uploads import validate_image_upload
 from .utils import login_clear_failures, login_is_locked, login_record_failure
 
 User = get_user_model()
+
+
+def _clean_whatsapp_number(value):
+    """Normalise a WhatsApp number to international digits for wa.me links."""
+    value = (value or "").strip()
+    if not value:
+        return ""
+    digits = normalize_whatsapp_number(value)
+    if not is_valid_whatsapp_number(digits):
+        raise ValidationError(
+            "Enter the WhatsApp number in international format, including "
+            "the country code (8–15 digits)."
+        )
+    return digits
 
 
 class SectionedFormMixin:
@@ -47,13 +65,15 @@ class SiteSettingsForm(forms.ModelForm):
     class Meta:
         model = SiteSettings
         fields = [
-            "company_name", "tagline", "hero_heading", "hero_description",
-            "contact_phone", "contact_email", "whatsapp_number", "hours",
-            "business_address", "map_embed_url", "footer_description",
+            "company_name", "business_type", "tagline", "hero_heading",
+            "hero_description", "contact_phone", "contact_email",
+            "whatsapp_number", "hours", "business_address", "city", "state",
+            "country", "pin_code", "map_embed_url", "footer_description",
             "facebook_url", "instagram_url", "linkedin_url", "youtube_url",
         ]
         widgets = {
             "company_name": forms.TextInput(attrs={"class": "form-control"}),
+            "business_type": forms.TextInput(attrs={"class": "form-control"}),
             "tagline": forms.TextInput(attrs={"class": "form-control"}),
             "hero_heading": forms.TextInput(attrs={"class": "form-control"}),
             "hero_description": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
@@ -62,6 +82,10 @@ class SiteSettingsForm(forms.ModelForm):
             "whatsapp_number": forms.TextInput(attrs={"class": "form-control"}),
             "hours": forms.TextInput(attrs={"class": "form-control"}),
             "business_address": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "city": forms.TextInput(attrs={"class": "form-control"}),
+            "state": forms.TextInput(attrs={"class": "form-control"}),
+            "country": forms.TextInput(attrs={"class": "form-control"}),
+            "pin_code": forms.TextInput(attrs={"class": "form-control"}),
             "map_embed_url": forms.URLInput(attrs={"class": "form-control"}),
             "footer_description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
             "facebook_url": forms.URLInput(attrs={"class": "form-control"}),
@@ -71,19 +95,22 @@ class SiteSettingsForm(forms.ModelForm):
         }
 
     def clean_whatsapp_number(self):
-        value = (self.cleaned_data.get("whatsapp_number") or "").strip()
-        if not value:
-            return ""
-        digits = "".join(char for char in value if char.isdigit())
-        if len(digits) < 8 or len(digits) > 15:
-            raise ValidationError(
-                "Enter the WhatsApp number in international format, including "
-                "the country code (8–15 digits)."
-            )
-        return value
+        return _clean_whatsapp_number(self.cleaned_data.get("whatsapp_number"))
 
     def clean_business_address(self):
         return (self.cleaned_data.get("business_address") or "").strip()
+
+    def clean_city(self):
+        return (self.cleaned_data.get("city") or "").strip()
+
+    def clean_state(self):
+        return (self.cleaned_data.get("state") or "").strip()
+
+    def clean_country(self):
+        return (self.cleaned_data.get("country") or "").strip()
+
+    def clean_pin_code(self):
+        return (self.cleaned_data.get("pin_code") or "").strip()
 
 
 class _SettingsSubForm(SectionedFormMixin, forms.ModelForm):
@@ -131,19 +158,53 @@ class ContactInfoForm(_SettingsSubForm):
     class Meta:
         model = SiteSettings
         fields = [
-            "contact_email", "contact_phone", "whatsapp_number", "business_address",
-            "hours", "map_embed_url",
+            "company_name", "business_type", "contact_email", "contact_phone",
+            "whatsapp_number", "business_address", "city", "state", "country",
+            "pin_code", "hours", "map_embed_url",
         ]
         widgets = {
             "business_address": forms.Textarea(attrs={"rows": 4}),
         }
     sections = [
-        ("Contact channels", "Only configured values are shown as clickable links on the public site.", ["contact_email", "contact_phone", "whatsapp_number"]),
-        ("Location & hours", "", ["business_address", "hours", "map_embed_url"]),
+        (
+            "Company & enquiry contacts",
+            "Only configured values appear as clickable links on the public site.",
+            [
+                "company_name", "business_type", "contact_email",
+                "contact_phone", "whatsapp_number",
+            ],
+        ),
+        (
+            "Business address",
+            "Enter only verified details. Street address and PIN code are optional; "
+            "the city, state and country are displayed as the locality.",
+            ["business_address", "city", "state", "country", "pin_code"],
+        ),
+        (
+            "Hours & map",
+            "The map embed is optional. Leave it blank until the exact location is confirmed.",
+            ["hours", "map_embed_url"],
+        ),
     ]
 
     def clean_whatsapp_number(self):
-        return SiteSettingsForm.clean_whatsapp_number(self)
+        return _clean_whatsapp_number(self.cleaned_data.get("whatsapp_number"))
+
+    def clean_business_address(self):
+        return (self.cleaned_data.get("business_address") or "").strip()
+
+    def clean_city(self):
+        return (self.cleaned_data.get("city") or "").strip()
+
+    def clean_state(self):
+        return (self.cleaned_data.get("state") or "").strip()
+
+    def clean_country(self):
+        return (self.cleaned_data.get("country") or "").strip()
+
+    def clean_pin_code(self):
+        return (self.cleaned_data.get("pin_code") or "").strip()
+
 
 
 class SocialMediaForm(_SettingsSubForm):
@@ -362,7 +423,13 @@ class DashboardPasswordChangeForm(PasswordChangeForm):
 
 
 class StaffPasswordResetForm(PasswordResetForm):
-    """Only staff accounts can use the dashboard password reset flow."""
+    """Only staff accounts can use the dashboard password reset flow.
+
+    The reset message is routed through the Email Manager when a password reset
+    template and rule exist, so it uses the configured SMTP account and is
+    recorded in Email Logs. Django's default reset email is used only when the
+    Email Manager has no active template/rule for this event.
+    """
 
     def get_users(self, email):
         # ``PasswordResetForm.get_users`` returns a generator, so filter while
@@ -370,6 +437,45 @@ class StaffPasswordResetForm(PasswordResetForm):
         for user in super().get_users(email):
             if user.is_staff:
                 yield user
+
+    def send_mail(
+        self,
+        subject_template_name,
+        email_template_name,
+        context,
+        from_email,
+        to_email,
+        html_email_template_name=None,
+    ):
+        try:
+            from email_manager.notifications import send_password_reset_email
+
+            user = context.get("user")
+            protocol = context.get("protocol") or "https"
+            domain = context.get("domain") or ""
+            reset_path = reverse(
+                "dashboard:password_reset_confirm",
+                kwargs={
+                    "uidb64": context.get("uid"),
+                    "token": context.get("token"),
+                },
+            )
+            log = send_password_reset_email(
+                user, f"{protocol}://{domain}{reset_path}"
+            )
+        except Exception:
+            log = None
+        if log is not None:
+            # The Email Manager handled the message (sent, skipped or failed).
+            return
+        return super().send_mail(
+            subject_template_name,
+            email_template_name,
+            context,
+            from_email,
+            to_email,
+            html_email_template_name=html_email_template_name,
+        )
 
 
 class NotificationCreateForm(forms.Form):
@@ -383,7 +489,7 @@ class NotificationCreateForm(forms.Form):
     )
     url = forms.CharField(
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "/admin-panel/enquiries/"}),
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "/admin/enquiries/"}),
     )
     level = forms.ChoiceField(
         choices=[("info", "Information"), ("success", "Success"), ("warning", "Warning"), ("danger", "Urgent")],
@@ -429,7 +535,7 @@ class StaffLoginForm(AuthenticationForm):
 def staff_required(view):
     return user_passes_test(
         lambda user: user.is_active and user.is_staff,
-        login_url=settings.LOGIN_URL,
+        login_url=reverse_lazy("dashboard:login"),
     )(view)
 
 
@@ -438,7 +544,7 @@ def superuser_required(view):
     def wrapper(request, *args, **kwargs):
         user = request.user
         if not user.is_authenticated:
-            return redirect_to_login(request.get_full_path(), settings.LOGIN_URL)
+            return redirect_to_login(request.get_full_path(), reverse_lazy("dashboard:login"))
         if not (user.is_active and user.is_superuser):
             raise PermissionDenied
         return view(request, *args, **kwargs)

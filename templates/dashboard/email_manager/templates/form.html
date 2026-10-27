@@ -1,0 +1,131 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block eyebrow %}Email manager{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:email_template_list' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+  All templates
+</a>
+{% if template %}
+<a class="btn btn--outline btn--sm" href="{% url 'dashboard:email_template_preview' template.pk %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-eye"></use></svg>
+  Preview
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% include "dashboard/email_manager/_tabs.html" %}
+
+<p class="dash-lede">Edit the subject, HTML body and plain-text alternative. Only the approved placeholders below are accepted. Django template tags and arbitrary Python are rejected.</p>
+
+<form method="post" class="dash-form" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+  <div class="form-status is-visible" role="alert">
+    {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="dash-form__layout">
+    <div class="dash-form__main">
+      <section class="dash-card">
+        <header class="dash-card__head">
+          <div>
+            <h2>Template details</h2>
+            <p>The key is used by notification rules. System templates keep a fixed key.</p>
+          </div>
+        </header>
+        <div class="field-grid">
+          {% include "dashboard/includes/field.html" with field=form.name %}
+          {% include "dashboard/includes/field.html" with field=form.key %}
+          {% include "dashboard/includes/field.html" with field=form.audience %}
+          {% include "dashboard/includes/field.html" with field=form.is_active %}
+          {% include "dashboard/includes/field.html" with field=form.description %}
+        </div>
+      </section>
+
+      <section class="dash-card">
+        <header class="dash-card__head">
+          <div>
+            <h2>Message content</h2>
+            <p>Approved placeholders are substituted when the email is sent. Customer values are escaped automatically in HTML.</p>
+          </div>
+        </header>
+
+        <div class="field-grid">
+          {% include "dashboard/includes/field.html" with field=form.subject %}
+          <div class="field field--full{% if form.html_body.errors %} has-error{% endif %}">
+            <label for="{{ form.html_body.id_for_label }}">{{ form.html_body.label }}</label>
+            {{ form.html_body }}
+            <span class="hint">{{ form.html_body.help_text }}</span>
+            {% for error in form.html_body.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+          <div class="field field--full{% if form.text_body.errors %} has-error{% endif %}">
+            <label for="{{ form.text_body.id_for_label }}">{{ form.text_body.label }}</label>
+            {{ form.text_body }}
+            <span class="hint">{{ form.text_body.help_text }}</span>
+            {% for error in form.text_body.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="dash-form__side">
+      <section class="dash-card">
+        <header class="dash-card__head">
+          <div>
+            <h2>Approved placeholders</h2>
+            <p>Select a placeholder to copy it.</p>
+          </div>
+        </header>
+        <div class="email-placeholder-list">
+          {% for name, description in placeholders.items %}
+          <button class="email-placeholder" type="button" data-copy-placeholder="{{ name }}" title="{{ description }}">
+            <code>{{ "{{" }} {{ name }} &#125;&#125;</code>
+            <span>{{ description }}</span>
+          </button>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="dash-card dash-card--quiet">
+        <header class="dash-card__head">
+          <div><h2>Validation rules</h2></div>
+        </header>
+        <ul class="check-status-list">
+          <li><span class="check-status is-done"><svg class="icon icon--sm" aria-hidden="true"><use href="#icon-check"></use></svg></span>Placeholders from the approved list only</li>
+          <li><span class="check-status is-done"><svg class="icon icon--sm" aria-hidden="true"><use href="#icon-check"></use></svg></span>No <code>{% templatetag openblock %}</code> template tags</li>
+          <li><span class="check-status is-done"><svg class="icon icon--sm" aria-hidden="true"><use href="#icon-check"></use></svg></span>No arbitrary Python or imports</li>
+          <li><span class="check-status is-done"><svg class="icon icon--sm" aria-hidden="true"><use href="#icon-check"></use></svg></span>HTML sanitised before sending</li>
+        </ul>
+        <p class="dash-note">Scripts, frames, forms and event-handler attributes are removed from rendered HTML automatically.</p>
+      </section>
+
+      {% if template %}
+      <section class="dash-card dash-card--quiet">
+        <header class="dash-card__head">
+          <div><h2>Record</h2></div>
+        </header>
+        <dl class="detail-list detail-list--compact">
+          <div class="detail-row"><dt>Key</dt><dd class="mono">{{ template.key }}</dd></div>
+          <div class="detail-row"><dt>Created</dt><dd>{{ template.created_at|date:"j M Y, H:i" }}</dd></div>
+          <div class="detail-row"><dt>Updated</dt><dd>{{ template.updated_at|date:"j M Y, H:i" }}</dd></div>
+          <div class="detail-row"><dt>Type</dt><dd>{% if template.is_system %}System template{% else %}Custom template{% endif %}</dd></div>
+        </dl>
+      </section>
+      {% endif %}
+    </aside>
+  </div>
+
+  <div class="dash-sticky-actions">
+    <button class="btn btn--primary" type="submit">{{ submit_label|default:"Save template" }}</button>
+    <a class="btn btn--ghost" href="{% url 'dashboard:email_template_list' %}">Cancel</a>
+    <span class="dash-sub">Changes take effect on the next email that uses this template.</span>
+  </div>
+</form>
+{% endblock %}

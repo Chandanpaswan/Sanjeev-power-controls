@@ -88,6 +88,13 @@ class Enquiry(models.Model):
     ]
 
     reference = models.CharField(max_length=20, unique=True, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="enquiries_submitted",
+    )
     name = models.CharField(max_length=120)
     company = models.CharField(max_length=140, blank=True)
     email = models.EmailField()
@@ -111,10 +118,18 @@ class Enquiry(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
         related_name="assigned_enquiries",
     )
+    assigned_seller = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assigned_enquiries_seller",
+    )
     customer = models.ForeignKey(
         Customer, on_delete=models.SET_NULL, null=True, blank=True,
         related_name="enquiries",
     )
+    quantity = models.CharField(max_length=100, blank=True)
     follow_up_date = models.DateField(null=True, blank=True, db_index=True)
     internal_notes = models.TextField(
         blank=True,

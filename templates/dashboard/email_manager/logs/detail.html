@@ -1,0 +1,114 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Email log #{{ email_log.pk }}{% endblock %}
+{% block eyebrow %}Email manager{% endblock %}
+{% block page_title %}Email log #{{ email_log.pk }}{% endblock %}
+
+{% block page_actions %}
+<a class="btn btn--ghost btn--sm" href="{% url 'dashboard:email_log_list' %}">
+  <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-arrow-left"></use></svg>
+  All email logs
+</a>
+{% endblock %}
+
+{% block content %}
+{% include "dashboard/email_manager/_tabs.html" %}
+
+<p class="dash-lede">
+  {{ email_log.created_at|date:"j F Y, H:i" }}
+  · <span class="status-pill status-pill--{{ email_log.status_css }}">{{ email_log.get_status_display }}</span>
+  {% if email_log.enquiry %}· Enquiry {{ email_log.enquiry.reference }}{% endif %}
+</p>
+
+<div class="dash-columns dash-columns--detail">
+  <div class="dash-columns__main">
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Message summary</h2>
+          <p>Metadata only. Full message bodies are deliberately not stored.</p>
+        </div>
+      </header>
+      <dl class="detail-list">
+        <div class="detail-row"><dt>Recipient</dt><dd>{{ email_log.recipient }}{% if email_log.recipient_name %}<span class="dash-sub">{{ email_log.recipient_name }}</span>{% endif %}</dd></div>
+        <div class="detail-row"><dt>Sender</dt><dd>{{ email_log.sender|default:"—" }}</dd></div>
+        <div class="detail-row"><dt>Subject</dt><dd>{{ email_log.subject|default:"—" }}</dd></div>
+        <div class="detail-row"><dt>Template</dt><dd>{% if email_log.template_name %}{{ email_log.template_name }} <span class="dash-sub mono">{{ email_log.template_key }}</span>{% else %}Not template-based{% endif %}</dd></div>
+        <div class="detail-row"><dt>Event</dt><dd>{{ email_log.event_label|default:"—" }}</dd></div>
+        <div class="detail-row"><dt>Message ID</dt><dd class="mono">{{ email_log.message_id|default:"Not supplied by the server" }}</dd></div>
+        <div class="detail-row"><dt>Attempts</dt><dd>{{ email_log.attempts }}</dd></div>
+        <div class="detail-row"><dt>Queued at</dt><dd>{{ email_log.created_at|date:"j M Y, H:i:s" }}</dd></div>
+        <div class="detail-row"><dt>Last updated</dt><dd>{{ email_log.updated_at|date:"j M Y, H:i:s" }}</dd></div>
+        <div class="detail-row"><dt>Accepted at</dt><dd>{{ email_log.sent_at|date:"j M Y, H:i:s"|default:"—" }}</dd></div>
+        {% if email_log.triggered_by %}
+        <div class="detail-row"><dt>Triggered by</dt><dd>{{ email_log.triggered_by.get_full_name|default:email_log.triggered_by.username }}</dd></div>
+        {% endif %}
+      </dl>
+
+      {% if email_log.error_summary %}
+      <div class="notice {% if email_log.status == 'failed' %}notice--danger{% else %}notice--warn{% endif %}">
+        <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+        <div>
+          <p><strong>Sanitised error summary</strong></p>
+          <p>{{ email_log.error_summary }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="notice notice--info notice--compact">
+        <svg class="icon" aria-hidden="true"><use href="#icon-info"></use></svg>
+        <p>{{ email_log.status_explanation }}</p>
+      </div>
+    </section>
+
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div>
+          <h2>Retry</h2>
+          <p>Only failed enquiry notifications can be rebuilt safely.</p>
+        </div>
+      </header>
+      {% if can_retry %}
+      <form method="post" action="{% url 'dashboard:email_log_retry' email_log.pk %}">
+        {% csrf_token %}
+        <p class="dash-note">This re-renders the linked template from the stored enquiry and sends it again. The attempt count and result are updated on this same log entry.</p>
+        <button class="btn btn--outline" type="submit" onclick="return confirm('Retry this email now?');">
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+          Retry this email
+        </button>
+      </form>
+      {% else %}
+      <p class="dash-note">{% if email_log.status == 'failed' %}This message cannot be retried because it has reached the attempt limit, has no template, or is not linked to an enquiry.{% else %}Retries are only available for failed enquiry notifications.{% endif %}</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <aside class="dash-columns__side">
+    <section class="dash-card">
+      <header class="dash-card__head">
+        <div><h2>Related record</h2></div>
+      </header>
+      {% if email_log.enquiry and can_view_enquiry %}
+      <dl class="detail-list detail-list--compact">
+        <div class="detail-row"><dt>Reference</dt><dd class="mono">{{ email_log.enquiry.reference }}</dd></div>
+        <div class="detail-row"><dt>Customer</dt><dd>{{ email_log.enquiry.name }}</dd></div>
+        <div class="detail-row"><dt>Status</dt><dd>{{ email_log.enquiry.get_status_display }}</dd></div>
+      </dl>
+      <a class="btn btn--outline btn--block btn--sm" href="{% url 'dashboard:enquiry_detail' email_log.enquiry.pk %}">
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#icon-inbox"></use></svg>
+        Open enquiry
+      </a>
+      {% else %}
+      <p class="dash-note">No linked enquiry, or your account cannot view enquiry records.</p>
+      {% endif %}
+    </section>
+
+    <section class="dash-card dash-card--quiet">
+      <header class="dash-card__head">
+        <div><h2>Privacy</h2></div>
+      </header>
+      <p class="dash-note">Logs contain recipient addresses and metadata needed for support and auditing. They never contain SMTP passwords, authentication tokens or full message bodies. Logs older than the retention period can be pruned from the logs page.</p>
+    </section>
+  </aside>
+</div>
+{% endblock %}

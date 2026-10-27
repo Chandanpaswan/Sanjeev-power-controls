@@ -15,7 +15,7 @@ class AdminRedirectMiddleware:
         if request.method in ("GET", "HEAD"):
             path = request.path
             exempt = (
-                path.startswith("/admin-panel/")
+                path.startswith("/admin/")
                 or path.startswith("/django-admin/")
                 or path.startswith("/static/")
                 or path.startswith("/media/")
@@ -46,7 +46,7 @@ class MaintenanceModeMiddleware:
     def __call__(self, request):
         path = request.path
         exempt = (
-            path.startswith("/admin-panel/")
+            path.startswith("/admin/")
             or path.startswith("/django-admin/")
             or path.startswith("/static/")
             or path.startswith("/media/")

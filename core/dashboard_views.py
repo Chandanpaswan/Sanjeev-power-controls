@@ -1601,7 +1601,7 @@ class StaffLoginView(LoginView):
 
 
 class StaffLogoutView(LogoutView):
-    next_page = "/admin-panel/login/"
+    next_page = "/admin/login/"
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:

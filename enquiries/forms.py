@@ -26,10 +26,11 @@ class EnquiryForm(forms.ModelForm):
         },
     )
     website = forms.CharField(required=False, widget=forms.HiddenInput)
+    quantity = forms.CharField(required=False, label="Quantity required", widget=forms.TextInput(attrs={"placeholder": "e.g., 10 pcs"}))
 
     class Meta:
         model = Enquiry
-        fields = ["name", "company", "email", "phone", "product", "message"]
+        fields = ["name", "company", "email", "phone", "product", "message", "quantity"]
         widgets = {
             "name": forms.TextInput(
                 attrs={"placeholder": "Your full name", "autocomplete": "name"}
@@ -92,12 +93,23 @@ class EnquiryForm(forms.ModelForm):
 class EnquiryUpdateForm(SectionedFormMixin, forms.ModelForm):
     class Meta:
         model = Enquiry
-        fields = ["status", "internal_notes"]
+        fields = ["status", "priority", "assigned_to", "follow_up_date", "internal_notes"]
         widgets = {
             "status": forms.Select(attrs={"class": "form-select"}),
+            "priority": forms.Select(attrs={"class": "form-select"}),
+            "assigned_to": forms.Select(attrs={"class": "form-select"}),
+            "follow_up_date": forms.DateInput(
+                attrs={"class": "form-control", "type": "date"}
+            ),
             "internal_notes": forms.Textarea(attrs={"class": "form-control", "rows": 5, "placeholder": "Private notes visible only to staff…"}),
         }
+        labels = {
+            "assigned_to": "Assigned staff member",
+            "priority": "Priority",
+            "follow_up_date": "Follow-up due",
+        }
     sections = [
+        ("Assignment", "Route the lead and set the next follow-up date.", ["assigned_to", "priority", "follow_up_date"]),
         ("Follow-up", "Status changes are recorded in the audit log.", ["status"]),
         ("Private notes", "Never shown on the public website.", ["internal_notes"]),
     ]
@@ -105,6 +117,12 @@ class EnquiryUpdateForm(SectionedFormMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["internal_notes"].help_text = ""
+        self.fields["assigned_to"].queryset = User.objects.filter(
+            is_active=True, is_staff=True
+        ).order_by("first_name", "last_name", "username")
+        self.fields["assigned_to"].required = False
+        self.fields["assigned_to"].empty_label = "Unassigned"
+        self.fields["follow_up_date"].required = False
 
 
 class EnquiryNoteForm(forms.ModelForm):
